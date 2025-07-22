@@ -5,9 +5,6 @@ import razorpay, time
 import requests, random
 from datetime import datetime
 import os
-from dotenv import load_dotenv
-
-#load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
