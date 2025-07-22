@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Amiri&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;700&display=swap" rel="stylesheet">
+
+
+  <title>Mosque Donations</title>
+  <style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #f0f2f5;
+}
+
+.glass-header {
+  position: relative;
+  height: 200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+  overflow: hidden;
+}
+
+/* Frosted glass effect */
+.glass-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 0;
+}
+
+.header-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  flex-direction: column;
+  text-align: center;
+  color: white;
+  z-index: 2;
+}
+
+/* Logo at left */
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  top: 60px;
+  left: 40px;
+  z-index: 2;
+}
+
+.pay-content {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+
+.mosque-logo {
+  height: 100px; /* reduced a bit for space */
+  width: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  margin-bottom: 10px; /* spacing below logo */
+}
+
+/* Main title styling */
+.mosque-name {
+  font-size: 3.8rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 255, 255, 0.2);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 10px;
+}
+
+.mosque-tagline {
+  font-size: 1.3rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  opacity: 0.9;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .glass-header {
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    height: auto;
+  }
+
+  .logo-wrapper {
+    margin: 0 0 20px 0;
+  }
+
+  .mosque-logo {
+    height: 90px;
+  }
+
+  .mosque-name {
+    font-size: 2.2rem;
+  }
+
+  .mosque-tagline {
+    font-size: 1rem;
+  }
+  .treasurer-button {
+    display: block;
+    text-align: center;
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.input-card {
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  padding: 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.input-card label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+  color: #444;
+  font-size: 1.1rem;
+}
+
+.input-card input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-card input:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 5px #ffd700a0;
+  outline: none;
+}
+
+
+    #lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#lightbox img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(255,255,255,0.2);
+}
+
+#lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  font-size: 48px;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+  transition: 0.3s ease;
+}
+
+#lightbox-close:hover {
+  color: #ccc;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 16px; /* spacing between the two tabs */
+}
+
+.tab {
+  padding: 10px 28px;
+  background-color: #ffd700;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+  min-width: 280px;
+}
+.tab:hover {
+  background-color: #ffc107;
+  transform: translateY(-2px);
+}
+
+.tab.active {
+  background-color: #ffca28;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+}
+
+
+    .slider {
+      display: flex;
+      overflow-x: auto;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .slider img {
+      height: 200px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+.amount-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.amount-buttons button {
+  background: linear-gradient(135deg, #1dca6b, #ffb300);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  box-shadow: 0 6px 12px rgba(32, 136, 72, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.amount-buttons button:hover {
+  background: linear-gradient(135deg, #15be48, #2ddd4a);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.amount-buttons button:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+  
+
+    @keyframes fadeInScale {
+      from {
+      opacity: 0;
+      transform: scale(0.9);
+      }
+      to {
+      opacity: 1;
+      transform: scale(1);
+      }
+    }
+
+    .pay-btn {
+  background: linear-gradient(135deg, #4caf50, #2e7d32); /* Green gradient */
+  color: white;
+  padding: 14px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  margin-top: 1rem;
+}
+
+.pay-btn:hover {
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.pay-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+    .mosque-image {
+      width: 90%;
+      max-width: 600px;
+      border-radius: 16px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    tfoot {
+      font-weight: bold;
+    }
+.treasurer-button {
+  margin-top: 10px;             /* spacing below logo */
+  padding: 8px 16px;
+  background-color: #ffd700;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s;
+  text-align: center;           /* center text inside button */
+}
+
+
+.treasurer-button:hover {
+  background: #343a40;
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+  </style>
+</head>
+<body>
+
+<!-- Fancy Top Header -->
+<div class="glass-header">
+  <div class="logo-wrapper">
+    <img src="static/assets/mosque_logo.png" class="mosque-logo" alt="Mosque Logo" />
+    <a href="{{ url_for('treasurer_section')}}" class="treasurer-button">Treasurer Section</a>
+  </div>
+
+  <div class="header-content">
+    <div class="mosque-name">Masjid-e-Abu Bakr</div>
+    <div class="mosque-tagline">"A place of peace, prayer, and purpose"</div>
+  </div>
+</div>
+
+
+
+<div class="slider">
+  <img src="{{ url_for('static', filename='assets/mosque_images/old_mosque.jpg') }}" class="mosque-image" alt="Old Mosque">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque1.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque2.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque3.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque4.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque5.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque6.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque7.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+  <img src="{{ url_for('static', filename='assets/mosque_images/mosque8.jpeg') }}" alt="mosque.jpg" class="mosque-image">
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('donate')">Donate</div>
+  <div class="tab" onclick="switchTab('transactions')">Transactions</div>
+</div>
+
+<div class="content" id="donate">
+  <div class="input-card">
+    <label for="donor-name">👤 Enter Your Name:</label>
+    <input type="text" id="donor-name" placeholder="Your Full Name" required>
+  </div>
+
+
+
+  <div class="amount-buttons">
+    <button onclick="selectAmount(200)">₹200</button>
+    <button onclick="selectAmount(300)">₹300</button>
+    <button onclick="selectAmount(500)">₹500</button>
+    <button onclick="handleCashPayment()">Cash</button>
+  </div>
+
+  <div class="pay-content">
+    <div id="final-amount" style="margin: 1rem 0; font-weight: bold;"></div>
+    <button class="pay-btn" onclick="payNow()">Pay Now</button>
+  </div>
+</div>
+
+<div class="content" id="transactions" style="display: none;">
+  <table id="transaction-table">
+    <thead>
+      <tr><th>Name</th><th>Amount</th><th>Payment Method</th><th>Time</th></tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+         <tr><td colspan="4" style="height: 20px;">&nbsp;</td></tr>
+      <tr><td colspan="1">Total</td><td colspan="2" id="total-amount">₹0</td></tr>
+    </tfoot>
+  </table>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  let selectedAmount = 0;
+
+  function switchTab(tab) {
+  // Hide all content sections
+  document.querySelectorAll('.content').forEach(div => {
+    div.style.display = 'none';
+  });
+
+  // Remove active class from all tabs
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  // Add active class to the clicked tab
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+
+  // Show the selected tab's content with proper layout
+  const selectedContent = document.getElementById(tab);
+  if (selectedContent) {
+    selectedContent.style.display = 'flex';
+    selectedContent.style.justifyContent = 'center';  // center horizontally
+    selectedContent.style.alignItems = 'center';      // center vertically (if needed)
+    selectedContent.style.flexDirection = 'column';   // stack content vertically
+  }
+
+  // Load transactions data if tab is "transactions"
+  if (tab === 'transactions') {
+    fetch('/get-transactions')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.querySelector('#transaction-table tbody');
+        tbody.innerHTML = '';
+        let total = 0;
+        data.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${row.name}</td><td>₹${row.amount}</td><td>${row.payment_method}</td><td>${row.time}</td>`;
+          tbody.appendChild(tr);
+          total += parseFloat(row.amount);
+        });
+        document.getElementById('total-amount').textContent = '₹' + total;
+      });
+  }
+}
+
+
+  function selectAmount(amount) {
+    selectedAmount = amount;
+    fetch(`/adjust-amount?amount=${amount}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('final-amount').textContent = `You need to pay ₹${data.payable} to settle ₹${amount}`;
+        selectedAmount = data.payable;
+      });
+  }
+
+  function handleCashPayment() {
+  const name = document.getElementById('donor-name').value.trim();
+  if (!name) {
+    alert("Please enter your name before choosing Cash.");
+    return;
+  }
+
+  // Store the donor name in localStorage so it can be accessed on cash-auth page
+  localStorage.setItem('donorName', name);
+
+  // Redirect to the cash-auth page
+  window.location.href = "/cash-auth";
+}
+
+
+  function payNow() {
+    const name = document.getElementById('donor-name').value.trim();
+    if (!name || !selectedAmount) {
+      alert("Please enter your name and select an amount.");
+      return;
+    }
+
+    fetch('/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: selectedAmount, name: name })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const options = {
+        key: "{{ YOUR_RAZORPAY_KEY }}",
+        amount: data.amount,
+        currency: "INR",
+        name: "Mosque Donation",
+        description: "Thank you for your support",
+        order_id: data.order_id,
+        handler: function (response) {
+          fetch('/payment-success', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, amount: data.amount })
+          }).then(() => {
+            alert("Payment Successful! JazakAllah Khair.");
+            switchTab('transactions');
+          });
+        },
+        prefill: { name: name },
+        theme: { color: "#0275d8" }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    });
+  }
+</script>
+<div id="lightbox" style="display:none;">
+  <span id="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="" alt="Large View" />
+</div>
+<script>
+  // Lightbox logic
+  const images = document.querySelectorAll('.slider img');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxClose = document.getElementById('lightbox-close');
+
+  images.forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightbox.style.display = 'flex';
+    });
+  });
+
+  lightboxClose.addEventListener('click', () => {
+    lightbox.style.display = 'none';
+    lightboxImg.src = '';
+  });
+
+  // Also close on background click
+  lightbox.addEventListener('click', e => {
+    if (e.target === lightbox) {
+      lightbox.style.display = 'none';
+      lightboxImg.src = '';
+    }
+  });
+</script>
+
+<script src="{{ url_for('static', filename='image_slider.js') }}"></script>
+
+
+</body>
+</html>
