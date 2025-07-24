@@ -15,7 +15,23 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets',
 
 # Get authorized gspread client and credentials (for Drive API)
 def get_gsheet_client_and_creds():
-    creds = ServiceAccountCredentials.from_json_keyfile_name('et/secrets/credentials.json', SCOPES)
+    # creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', SCOPES)
+    service_account_info = {
+        "type": os.getenv("TYPE"),
+        "project_id": os.getenv("PROJECT_ID"),
+        "private_key_id": os.getenv("PRIVATE_KEY_ID"),
+        "private_key": os.getenv("PRIVATE_KEY").replace("\\n", "\n"),
+        "client_email": os.getenv("CLIENT_EMAIL"),
+        "client_id": os.getenv("CLIENT_ID"),
+        "auth_uri": os.getenv("AUTH_URI"),
+        "token_uri": os.getenv("TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL"),
+        "port" : os.getenv("PORT"),
+        "universe_domain" : os.getenv("googleapis.com")
+    }
+
+    creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
     gc = gspread.authorize(creds)
     return gc, creds
 
