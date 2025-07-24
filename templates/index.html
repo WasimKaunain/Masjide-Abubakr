@@ -22,7 +22,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
+  padding: 150px 15px;
+  width:  100%;
+  box-sizing: border-box;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4);
   background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
   overflow: hidden;
@@ -97,19 +99,44 @@ justify-content: center;
 
 /* Responsive */
 @media screen and (max-width: 768px) {
+
+  body,body{
+  margin: 0;
+  padding: 0;
+    }
+
   .glass-header {
+    display : flex;
     flex-direction: column;
     align-items: center;
-    padding: 30px 20px;
+    padding: 20px 15px;
     height: auto;
+    width: 100%; /* Full width */
+    box-sizing: border-box;
   }
 
   .logo-wrapper {
-    margin: 0 0 20px 0;
+    display: flex;
+    flex-direction: column; /* Horizontal layout */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    margin: 0;
+    width: 100%;
   }
 
   .mosque-logo {
-    height: 90px;
+    height: 80px;
+  }
+
+  .header-content {
+    order: -1; /* Move above logo-wrapper */
+    margin-bottom: 20px;
+    text-align: center;
   }
 
   .mosque-name {
@@ -122,50 +149,89 @@ justify-content: center;
   .treasurer-button {
     display: block;
     text-align: center;
-    width: 100%;
+    width: auto;
     margin-top: 10px;
   }
-}
 
-.content {
+  .tabs {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
+  margin-top: 20px;
+  gap: 16px; /* spacing between the two tabs */
+    }
+
+  .tab {
+  font-size: 14px;
+  padding: 6px 10px;
+  width: fit-content;
+  max-width: 100px;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.input-card {
-  display:flex;
-  flex-direction: column;
-  align-items: center;
-  background: #ffffff;
-  padding: 24px 32px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 400px;
-  text-align: left;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.input-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+@media screen and (max-width: 480px) {
+  .mosque-name {
+    font-size: 1.6rem;
+  }
+
+  .mosque-tagline {
+    font-size: 0.9rem;
+  }
+
+  .tab {
+    padding: 8px 18px;
+    font-size: 0.9rem;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .amount-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .amount-buttons button {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .pay-btn {
+    width: 100%;
+    font-size: 1rem;
+  }
 }
 
-.input-card label {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 10px;
-  color: #444;
-  font-size: 1.1rem;
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .mosque-name {
+    font-size: 3rem;
+  }
+
+  .tab {
+    font-size: 1rem;
+    padding: 12px 24px;
+  }
 }
 
-.input-card input {
-  width: 100%;
-  padding: 12px 16px;
+@media screen and (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  th, td {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+}
+
+
+
+.amount-buttons button:hover {
   border: 2px solid #ddd;
   border-radius: 12px;
   font-size: 1rem;
@@ -194,6 +260,17 @@ justify-content: center;
 
 #lightbox img {
   max-width: 90%;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  box-shadow: 0 6px 12px rgba(32, 136, 72, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.amount-buttons button:hover {
   max-height: 90%;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(255,255,255,0.2);
@@ -218,6 +295,7 @@ justify-content: center;
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  margin-bottom: 100px;
   gap: 16px; /* spacing between the two tabs */
 }
 
@@ -233,8 +311,9 @@ justify-content: center;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
   text-align: center;
-  min-width: 280px;
+  min-width: 180px;
 }
+
 .tab:hover {
   background-color: #ffc107;
   transform: translateY(-2px);
@@ -259,101 +338,37 @@ justify-content: center;
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-.amount-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 20px;
+@keyframes fadeInScale {
+  from {
+  opacity: 0;
+  transform: scale(0.9);
+  }
+  to {
+  opacity: 1;
+  transform: scale(1);
+  }
 }
 
-.amount-buttons button {
-  background: linear-gradient(135deg, #1dca6b, #ffb300);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #000;
-  box-shadow: 0 6px 12px rgba(32, 136, 72, 0.2);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
+.mosque-image {
+  width: 90%;
+  max-width: 600px;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  margin-bottom: 40px; }
 
-.amount-buttons button:hover {
-  background: linear-gradient(135deg, #15be48, #2ddd4a);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem; }
 
-.amount-buttons button:active {
-  transform: scale(0.97);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;}
 
+tfoot {
+  font-weight: bold; }
 
-  
-
-    @keyframes fadeInScale {
-      from {
-      opacity: 0;
-      transform: scale(0.9);
-      }
-      to {
-      opacity: 1;
-      transform: scale(1);
-      }
-    }
-
-    .pay-btn {
-  background: linear-gradient(135deg, #4caf50, #2e7d32); /* Green gradient */
-  color: white;
-  padding: 14px 30px;
-  font-size: 18px;
-  font-weight: bold;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  margin-top: 1rem;
-}
-
-.pay-btn:hover {
-  background: linear-gradient(135deg, #66bb6a, #388e3c);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
-}
-
-.pay-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-
-    .mosque-image {
-      width: 90%;
-      max-width: 600px;
-      border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-      margin-bottom: 40px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-
-    tfoot {
-      font-weight: bold;
-    }
 .treasurer-button {
   margin-top: 10px;             /* spacing below logo */
   padding: 8px 16px;
@@ -375,21 +390,69 @@ justify-content: center;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
 }
 
+.content {
+  margin-bottom: 80px;
+}
+
+.content button {
+  padding: 10px 14px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  background: linear-gradient(145deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 10px;
+
+  /* 3D shadow and depth */
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.3s ease,
+    background 0.4s ease;
+}
+
+.content button:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.15);
+  background: linear-gradient(145deg, #0056b3, #003f7f);
+}
+
+.content button:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #003f7f, #002f6c);
+}
+
+
+}
+
+
   </style>
 </head>
 <body>
 
 <!-- Fancy Top Header -->
 <div class="glass-header">
-  <div class="logo-wrapper">
-    <img src="static/assets/mosque_logo.png" class="mosque-logo" alt="Mosque Logo" />
-    <a href="{{ url_for('treasurer_section')}}" class="treasurer-button">Treasurer Section</a>
-  </div>
 
-  <div class="header-content">
-    <div class="mosque-name">Masjid-e-Abu Bakr</div>
-    <div class="mosque-tagline">"A place of peace, prayer, and purpose"</div>
-  </div>
+    <div class="header-content">
+        <div class="mosque-name">Masjid-e-Abu Bakr</div>
+        <div class="mosque-tagline">"A place of peace, prayer, and purpose"</div>
+    </div>
+
+    <div class="logo-wrapper">
+        <img src="static/assets/mosque_logo.png" class="mosque-logo" alt="Mosque Logo" />
+        <a href="{{ url_for('treasurer_section')}}" class="treasurer-button">Treasurer Section</a>
+    </div>
+
 </div>
 
 
@@ -411,26 +474,7 @@ justify-content: center;
   <div class="tab" onclick="switchTab('transactions')">Transactions</div>
 </div>
 
-<div class="content" id="donate">
-  <div class="input-card">
-    <label for="donor-name">👤 Enter Your Name:</label>
-    <input type="text" id="donor-name" placeholder="Your Full Name" required>
-  </div>
 
-
-
-  <div class="amount-buttons">
-    <button onclick="selectAmount(200)">₹200</button>
-    <button onclick="selectAmount(300)">₹300</button>
-    <button onclick="selectAmount(500)">₹500</button>
-    <button onclick="handleCashPayment()">Cash</button>
-  </div>
-
-  <div class="pay-content">
-    <div id="final-amount" style="margin: 1rem 0; font-weight: bold;"></div>
-    <button class="pay-btn" onclick="payNow()">Pay Now</button>
-  </div>
-</div>
 
 <div class="content" id="transactions" style="display: none;">
   <table id="transaction-table">
@@ -445,7 +489,102 @@ justify-content: center;
   </table>
 </div>
 
+<div class="content" id="donate" style="display: none;">
+  <h2>Select Donation Amount</h2>
+  <div style="display: flex; gap: 4px; margin-bottom: 15px;padding-left: 4px;padding-right: 4px;">
+    <button onclick="selectAmount(200)">₹200</button>
+    <button onclick="selectAmount(300)">₹300</button>
+    <button onclick="selectAmount(500)">₹500</button>
+    <button onclick="selectCash()">Cash</button>
+  </div>
+
+  <div id="calculation-section" style="display: none; padding: 20px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.1); /* semi-transparent */
+    box-shadow: 0 8px 32px 0 rgba(42, 187, 78, 0.37);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: rgb(3, 0, 0);
+    width: 80%;
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1.8;">
+    <div style="display: flex; justify-content: space-between;">
+      <span>Amount:</span>
+      <span>₹<span id="total-amount-display">0</span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <span>Fees (2%):</span>
+      <span>₹<span id="fee-display">0</span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <span>GST (18% on fee):</span>
+      <span>₹<span id="gst-display">0</span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 18px;">
+      <span><strong>Final Payable Amount:</strong></span>
+      <span><strong>₹<span id="final-amount-display">0</span></strong></span>
+    </div>
+
+    <button 
+      onclick="goToPayment()" 
+      id="pay-now-btn"
+      style="padding: 12px 24px;
+             font-size: 16px;
+             font-weight: bold;
+             color: white;
+             background: linear-gradient(135deg, #28a745, #218838);
+             border: none;
+             border-radius: 10px;
+             box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
+             cursor: pointer;
+             transition: all 0.3s ease;">
+      Pay Now
+    </button>
+
+    <script>
+      const btn = document.getElementById('pay-now-btn');
+      btn.addEventListener('mouseover', () => {
+        btn.style.transform = 'translateY(-3px)';
+        btn.style.boxShadow = '0 10px 20px rgba(0, 128, 0, 0.5)';
+        btn.style.background = 'linear-gradient(135deg, #218838, #1e7e34)';
+      });
+    
+      btn.addEventListener('mouseout', () => {
+        btn.style.transform = 'translateY(0)';
+        btn.style.boxShadow = '0 6px 15px rgba(0, 128, 0, 0.4)';
+        btn.style.background = 'linear-gradient(135deg, #28a745, #218838)';
+      });
+    </script>
+  </div>
+</div>
+
+
+<footer style="background-color: #615c5cdc; color:white; margin: 10px; padding:15px 10px;">
+  <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+
+      <!-- First line: Mosque name -->
+      <div style="font-weight: bold; margin-bottom: 0px; font-size: 15px;">&copy; 2025 Masjid-e-Abu Bakr</div>
+
+      <!-- Second line: Address -->
+      <div style="margin-top:0px; font-size: 15px;">
+      <a href="https://www.google.com/maps?q=25.5945667,84.7236936" 
+            target="_blank" 
+            style="color: white; text-decoration:none;">
+          📍 Purdilganj, Bhojpur, Bihar, India
+      </a>
+      </div>
+    <!-- Third line: Developer credit, on separate line -->
+    <div style="margin-top: 10px;font-size: 10px;">👨‍💻 Developed by Wasim Konain</div>
+
+  </div>  
+</footer>
+
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
   let selectedAmount = 0;
 
@@ -490,15 +629,24 @@ justify-content: center;
 }
 
 
-  function selectAmount(amount) {
-    selectedAmount = amount;
-    fetch(`/adjust-amount?amount=${amount}`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('final-amount').textContent = `You need to pay ₹${data.payable} to settle ₹${amount}`;
-        selectedAmount = data.payable;
-      });
-  }
+function selectAmount(amount) {
+  const fee = parseFloat((amount * 0.02).toFixed(2));
+  const gst = parseFloat((fee * 0.18).toFixed(2));
+  const finalAmount = amount + fee + gst;
+
+  document.getElementById('calculation-section').style.display = 'block';
+  document.getElementById('total-amount-display').textContent = amount;
+  document.getElementById('fee-display').textContent = fee;
+  document.getElementById('gst-display').textContent = gst;
+  document.getElementById('final-amount-display').textContent = finalAmount;
+
+  selectedAmount = finalAmount; // Save for payment processing
+}
+
+function goToPayment() {
+  alert("Redirecting to payment page with amount ₹" + selectedAmount);
+  // You can later replace this with actual redirect logic or Razorpay/Paytm integration
+}
 
   function handleCashPayment() {
   const name = document.getElementById('donor-name').value.trim();
@@ -512,6 +660,10 @@ justify-content: center;
 
   // Redirect to the cash-auth page
   window.location.href = "/cash-auth";
+}
+
+function selectCash() {
+  window.location.href = "/cash-auth"
 }
 
 
@@ -587,7 +739,6 @@ justify-content: center;
 </script>
 
 <script src="{{ url_for('static', filename='image_slider.js') }}"></script>
-
 
 </body>
 </html>

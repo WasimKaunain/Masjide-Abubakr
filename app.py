@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template,session
 from utils.email_otp_sender import send_email_otp, OTP_STORE
-from utils.sheet_operations import get_gsheet_client_and_creds, append_to_sheet, archive_and_create_new_sheet, get_current_sheet_name
+from utils.sheet_operations import get_gsheet_client_and_creds, append_to_sheet, archive_and_create_new_sheet, get_current_sheet_name,get_month_year
 import razorpay, time
 import requests, random
 from datetime import datetime
@@ -25,7 +25,7 @@ def send_otp():
     email = data.get('email')
     
     if not email:
-        return jsonify({'message': 'Email is required'}), 400
+        return jsonify({'message': 'Email is required'}), 
 
     try:
         send_email_otp(email)
@@ -121,6 +121,11 @@ def pay_salary():
     pay_date = data.get('date')
 
     sheet_name = get_current_sheet_name()
+
+    common_year,common_month = get_month_year(sheet_name)
+    # Step 3: Rename the sheet
+    new_title = f"Donation {common_year} {common_month}"
+
     append_to_sheet([payer, amount, 'Salary Paid', pay_date], sheet_name)
 
     # Calculate totals
@@ -135,7 +140,7 @@ def pay_salary():
     sheet.append_row(['Remaining for this month = ₹' + str(remaining)])
 
     # Archive and create new sheet
-    archive_and_create_new_sheet(sheet_name)
+    archive_and_create_new_sheet(sheet_name,new_title)
     return jsonify({'success': True})
 
 @app.route('/get-transactions')

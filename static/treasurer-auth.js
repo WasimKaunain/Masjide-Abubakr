@@ -9,9 +9,7 @@ async function sendOTP() {
     });
 
     const contentType = response.headers.get("content-type");
-    const result = contentType && contentType.includes("application/json")
-      ? await response.json()
-      : { message: "Unexpected server response" };
+    const result = contentType && contentType.includes("application/json") ? await response.json() : { message: "Unexpected server response" };
 
     alert(result.message);  // ✅ shows real message
 
@@ -26,7 +24,7 @@ async function sendOTP() {
 
 
 async function verifyOTP() {
-  const otp = document.getElementById("otp").value;
+  const otp = document.getElementById("otp").value;   
 
   if (!otp) {
     alert("Please enter the OTP.");
@@ -39,12 +37,14 @@ async function verifyOTP() {
     body: JSON.stringify({ otp })
   });
 
-  const result = await response.json();
+  const result = await response.json(); 
   alert(result.message);
 
   if (response.ok) {
     // Show the next form or redirect
-   window.location.href = '/treasurer-form';
+   document.getElementById("auth-section").style.display= 'none';
+   
+   document.getElementById("cash-form").style.display= 'block';
   }
 }
   
@@ -60,8 +60,31 @@ async function submitCashForm() {
     return;
   }
 
-  // Store donor name locally if needed later
-  localStorage.setItem("donorName", payerName);
+  try {
+        const response = await fetch('/pay-salary', 
+        { method: 'POST', 
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(
+            { payerName : payerName,
+              amount : amount,
+              date : date}
+            )});
+          if(response.ok) 
+            {
+              const result = await response.json();
+              alert(result.message || "Form submitted successfully!"); 
+              window.location.href = '/';
+            } 
+          else 
+            {
+            alert("Failed to submit form");
+            };
 
-  alert("Form submitted successfully!"); // Replace with actual logic
+      } 
+      catch (error) 
+      {
+        console.error("Error : ",error);
+        alert("Error submitting form");
+      } 
+  
 }
