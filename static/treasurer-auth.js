@@ -42,15 +42,13 @@ async function verifyOTP() {
 
   if (response.ok) {
     // Show the next form or redirect
-   document.getElementById("auth-section").style.display= 'none';
-   
-   document.getElementById("cash-form").style.display= 'block';
+  window.location.href = '/treasurer-dashboard';
   }
 }
   
 
 
-async function submitCashForm() {
+async function submitSalaryForm() {
   const payerName = document.getElementById("salary-payer-name").value;
   const amount = document.getElementById("salary-amount").value;
   const date = document.getElementById("date").value;
@@ -61,14 +59,13 @@ async function submitCashForm() {
   }
 
   try {
-        const response = await fetch('/pay-salary', 
-        { method: 'POST', 
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(
-            { payerName : payerName,
-              amount : amount,
-              date : date}
-            )});
+        const response = await fetch('/pay-salary', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({  payerName : payerName,
+                                                                                                                                            amount : amount,
+                                                                                                                                            date : date
+                                                                                                                                          }
+                                                                                                                                        )
+                                                    }
+                                    );
           if(response.ok) 
             {
               const result = await response.json();
@@ -81,7 +78,7 @@ async function submitCashForm() {
             };
 
       } 
-      catch (error) 
+  catch (error) 
       {
         console.error("Error : ",error);
         alert("Error submitting form");

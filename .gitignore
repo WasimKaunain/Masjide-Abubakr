@@ -1,4 +1,7 @@
 .env
-credentials.json
+*.json
 __pycache__/
 *.pyc
+encoded.txt
+main_encoded.txt
+secrets/

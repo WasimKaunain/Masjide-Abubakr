@@ -100,7 +100,7 @@ justify-content: center;
 /* Responsive */
 @media screen and (max-width: 768px) {
 
-  body,body{
+  body,html{
   margin: 0;
   padding: 0;
     }
@@ -396,7 +396,7 @@ tfoot {
 
 .content button {
   padding: 10px 14px;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 600;
   border: none;
   background: linear-gradient(145deg, #007bff, #0056b3);
@@ -433,7 +433,7 @@ tfoot {
 }
 
 
-}
+
 
 
   </style>
@@ -491,11 +491,11 @@ tfoot {
 
 <div class="content" id="donate" style="display: none;">
   <h2>Select Donation Amount</h2>
-  <div style="display: flex; gap: 4px; margin-bottom: 15px;padding-left: 4px;padding-right: 4px;">
+  <div style="display: flex; gap: 6px; margin-bottom: 15px;padding-left: 4px;padding-right: 4px;">
     <button onclick="selectAmount(200)">₹200</button>
     <button onclick="selectAmount(300)">₹300</button>
     <button onclick="selectAmount(500)">₹500</button>
-    <button onclick="selectCash()">Cash</button>
+    <button onclick="selectAmount(10)">₹10</button>
   </div>
 
   <div id="calculation-section" style="display: none; padding: 20px;
@@ -512,38 +512,56 @@ tfoot {
     font-weight: bold;
     font-size: 16px;
     line-height: 1.8;">
-    <div style="display: flex; justify-content: space-between;">
-      <span>Amount:</span>
-      <span>₹<span id="total-amount-display">0</span></span>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-      <span>Fees (2%):</span>
-      <span>₹<span id="fee-display">0</span></span>
-    </div>
-    <div style="display: flex; justify-content: space-between;">
-      <span>GST (18% on fee):</span>
-      <span>₹<span id="gst-display">0</span></span>
-    </div>
-    <div style="display: flex; justify-content: space-between; font-size: 18px;">
-      <span><strong>Final Payable Amount:</strong></span>
-      <span><strong>₹<span id="final-amount-display">0</span></strong></span>
+
+     <!-- 👇 Payee Name Input -->
+    <div style="margin-bottom: 20px;">
+        <label for="payee-name">Enter Payee Name:</label><br>
+        <input 
+            type="text" 
+            id="payee-name-input" 
+            placeholder="Enter Payee Name"
+            oninput="showPaymentBreakup()" 
+            style="padding: 8px; width: 60%; margin-top: 10px;
+                   border-radius: 8px; border: 1px solid #ccc; font-size: 16px;" />
     </div>
 
-    <button 
-      onclick="goToPayment()" 
-      id="pay-now-btn"
-      style="padding: 12px 24px;
-             font-size: 16px;
-             font-weight: bold;
-             color: white;
-             background: linear-gradient(135deg, #28a745, #218838);
-             border: none;
-             border-radius: 10px;
-             box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
-             cursor: pointer;
-             transition: all 0.3s ease;">
-      Pay Now
-    </button>
+    <div id="payment-breakup" style="display: none;">
+      <div style="display: flex; justify-content: space-between;">
+        <span>Amount:</span>
+        <span>₹<span id="total-amount-display">0</span></span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between;">
+        <span>Fees (2.2%):</span>
+        <span>₹<span id="fee-display">0</span></span>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between;">
+        <span>GST (18% on fee):</span>
+        <span>₹<span id="gst-display">0</span></span>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; font-size: 18px;">
+        <span><strong>Final Payable Amount:</strong></span>
+        <span><strong>₹<span id="final-amount-display">0</span></strong></span>
+      </div>
+    
+      <button 
+        onclick="goToPayment()" 
+        id="pay-now-btn"
+        style="padding: 12px 24px;
+               font-size: 16px;
+               font-weight: bold;
+               color: white;
+               background: linear-gradient(135deg, #28a745, #218838);
+               border: none;
+               border-radius: 10px;
+               box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
+               cursor: pointer;
+               transition: all 0.3s ease;">
+        Pay Now
+      </button>
+    </div>
 
     <script>
       const btn = document.getElementById('pay-now-btn');
@@ -559,6 +577,7 @@ tfoot {
         btn.style.background = 'linear-gradient(135deg, #28a745, #218838)';
       });
     </script>
+
   </div>
 </div>
 
@@ -583,7 +602,16 @@ tfoot {
   </div>  
 </footer>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+<script>
+        function showPaymentBreakup() {
+          const name = document.getElementById('payee-name-input').value.trim();
+          const breakupSection = document.getElementById('payment-breakup');
+          breakupSection.style.display = name.length > 0 ? 'block' : 'none';
+        }
+</script>
+
 
 <script>
   let selectedAmount = 0;
@@ -630,7 +658,7 @@ tfoot {
 
 
 function selectAmount(amount) {
-  const fee = parseFloat((amount * 0.02).toFixed(2));
+  const fee = parseFloat((amount * 0.022).toFixed(2));
   const gst = parseFloat((fee * 0.18).toFixed(2));
   const finalAmount = amount + fee + gst;
 
@@ -643,69 +671,8 @@ function selectAmount(amount) {
   selectedAmount = finalAmount; // Save for payment processing
 }
 
-function goToPayment() {
-  alert("Redirecting to payment page with amount ₹" + selectedAmount);
-  // You can later replace this with actual redirect logic or Razorpay/Paytm integration
-}
-
-  function handleCashPayment() {
-  const name = document.getElementById('donor-name').value.trim();
-  if (!name) {
-    alert("Please enter your name before choosing Cash.");
-    return;
-  }
-
-  // Store the donor name in localStorage so it can be accessed on cash-auth page
-  localStorage.setItem('donorName', name);
-
-  // Redirect to the cash-auth page
-  window.location.href = "/cash-auth";
-}
-
-function selectCash() {
-  window.location.href = "/cash-auth"
-}
-
-
-  function payNow() {
-    const name = document.getElementById('donor-name').value.trim();
-    if (!name || !selectedAmount) {
-      alert("Please enter your name and select an amount.");
-      return;
-    }
-
-    fetch('/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: selectedAmount, name: name })
-    })
-    .then(res => res.json())
-    .then(data => {
-      const options = {
-        key: "{{ YOUR_RAZORPAY_KEY }}",
-        amount: data.amount,
-        currency: "INR",
-        name: "Mosque Donation",
-        description: "Thank you for your support",
-        order_id: data.order_id,
-        handler: function (response) {
-          fetch('/payment-success', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, amount: data.amount })
-          }).then(() => {
-            alert("Payment Successful! JazakAllah Khair.");
-            switchTab('transactions');
-          });
-        },
-        prefill: { name: name },
-        theme: { color: "#0275d8" }
-      };
-      const rzp = new Razorpay(options);
-      rzp.open();
-    });
-  }
 </script>
+
 <div id="lightbox" style="display:none;">
   <span id="lightbox-close">&times;</span>
   <img id="lightbox-img" src="" alt="Large View" />
@@ -738,7 +705,10 @@ function selectCash() {
   });
 </script>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/static/checkout.js"></script>
 <script src="{{ url_for('static', filename='image_slider.js') }}"></script>
+
 
 </body>
 </html>

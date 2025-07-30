@@ -1,31 +1,33 @@
-from flask import Flask, request, jsonify, render_template,session
+from flask import Flask, request, jsonify, render_template,session,url_for,redirect
 from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import get_gsheet_client_and_creds, append_to_sheet, archive_and_create_new_sheet, get_current_sheet_name,get_month_year
 import razorpay, time
-import requests, random
+import requests, random, os
 from datetime import datetime
-import os
+from dotenv import load_dotenv
+
 
 app = Flask(__name__)
 app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
 
-#razorpay_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_SECRET_KEY")))
+razorpay_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_SECRET_KEY")))
 
 @app.route("/")
 def index():
-    return render_template("index.html")
-
-@app.route('/cash-auth')
-def cash_auth():
-    return render_template('cash-auth.html')
+    rzp_ki = os.getenv('RAZORPAY_KEY_ID')
+    return render_template("index.html", rzp_ki=rzp_ki)
 
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.get_json()
     email = data.get('email')
-    
+    treasurer_email = os.getenv('TREASURER_EMAIL')
+
     if not email:
-        return jsonify({'message': 'Email is required'}), 
+        return jsonify({'message': 'Email is required'}), 400
+    
+    if email != treasurer_email:
+        return jsonify({'message': 'Unauthorized email'}), 403
 
     try:
         send_email_otp(email)
@@ -43,6 +45,15 @@ def cash_form():
 def treasurer_form():
     return render_template('treasurer-form.html')
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    # Clear the treasurer's session
+    session.pop('treasurer_name', None)
+    
+    # Optionally, clear all session data
+    session.clear()
+    # Redirect to the login or treasurer section page
+    return redirect(url_for('index'))
 
 @app.route('/verify-otp', methods=['POST'])
 def verify_otp():
@@ -58,6 +69,7 @@ def verify_otp():
         return jsonify({"message": "OTP expired"}), 400
 
     if entered_otp == stored_data['otp']:
+        session['treasurer_name'] = os.getenv('TREASURER_NAME')
         return jsonify({"message": "OTP verified"}), 200
     else:
         return jsonify({"message": "Invalid OTP"}), 400
@@ -65,39 +77,71 @@ def verify_otp():
 @app.route('/submit-cash', methods=['POST'])
 def submit_cash():
     data = request.get_json()
-    donor_name = data.get('donorName')
-    treasurer_name = data.get('treasurerName')
+    donor_name = data.get('donor_name')
     amount = data.get('amount')
 
-    email = session.get('email')
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    if not (donor_name and amount and email):
+    if not (donor_name and amount ):
         return jsonify({'success': False, 'message': 'Missing data'}), 400
 
     # Store this in a Google Sheet or Database
     sheet_name = get_current_sheet_name()  
-    print(sheet_name)
     append_to_sheet([donor_name, amount, "Cash", timestamp ],sheet_name)
 
     return jsonify({'success': True})
 
 
-    
-@app.route("/create-order", methods=["POST"])
-# def create_order():
-#     data = request.get_json()
-#     amount = data["amount"]
-#     name = data["name"]
-    
-#     payment_amount = calculate_adjusted_amount(amount)
-#     order = razorpay_client.order.create(dict(amount=payment_amount, currency="INR", payment_capture='1'))
+@app.route("/verify_payment", methods=["POST"])
+def verify_payment():
+    try:
+        data = request.get_json()
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_signature = data.get('razorpay_signature')
 
-#     return jsonify({
-#         "order_id": order["id"],
-#         "amount": payment_amount,
-#         "name": name
-#     })
+        # Verify signature
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+
+        result = razorpay_client.utility.verify_payment_signature(params_dict)
+
+        # If signature is valid
+        return jsonify({"status": "success", "message": "Payment verified successfully."}), 200
+
+    except razorpay.errors.SignatureVerificationError:
+        return jsonify({"status": "failure", "message": "Payment verification failed."}), 400
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/create_order', methods=['POST'])
+def create_order():
+    try:
+        data = request.get_json()
+        amount = data.get("amount")
+        if not amount:
+            return jsonify({"status": "failure", "message": "Amount is required"}), 400
+
+        # Amount in paise
+        order = razorpay_client.order.create({
+            "amount": int(amount) * 100,
+            "currency": "INR",
+            "payment_capture": "1"  # Auto capture
+        })
+
+        return jsonify({
+            "status": "success",
+            "order_id": order["id"],
+            "amount": order["amount"],
+            "currency": order["currency"],
+            "key": os.getenv("RAZORPAY_KEY_ID")
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/payment-success", methods=["POST"])
 def payment_success():
@@ -106,17 +150,31 @@ def payment_success():
     amount = data["amount"]
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    append_to_sheet([name, amount / 100, timestamp])  # Store in sheet
+    sheet_name = get_current_sheet_name() 
+    append_to_sheet([name, amount / 100, "Online", timestamp],sheet_name)  # Store in sheet
     return jsonify({"status": "success"})
 
 @app.route('/treasurer-section')
 def treasurer_section():
     return render_template('treasurer-auth.html')
 
+@app.route('/treasurer-dashboard')
+def treasurer_dashboard():
+    if 'treasurer_name' not in session:
+        return redirect(url_for('treasurer_section'))  # or OTP page again
+    return render_template('treasurer-dashboard.html', treasurer_name=session['treasurer_name'])
+
+@app.route('/salary-form')
+def salary_form():
+    if 'treasurer_name' not in session:
+        return redirect(url_for('treasurer_section'))  # or OTP page again
+    return render_template('salary-form.html')
+
+
 @app.route('/pay-salary', methods=['POST'])
 def pay_salary():
     data = request.get_json()
-    payer = data.get('payer')
+    payer = data.get('payerName')
     amount = float(data.get('amount'))
     pay_date = data.get('date')
 

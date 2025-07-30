@@ -91,34 +91,29 @@
           background-color: #1b5e20;
         }
 
-        #otp-section {
-          margin-top: 1rem;
-          display: none;
-          transition: all 0.3s ease-in-out;
-        }
       </style>
     </head>
     <body>
       <button onclick="goBack()" class="back-button">← Back</button>
     
-      <div id = 'auth-section' style="display: block;" class="auth-card">
-        <h2>Treasurer's verification</h2>
-
-        <label for="email">Treasurer Email Address</label>
-        <input type="email" id="email" placeholder="Enter email">
+      <div class = "auth-card" id="cash-form" style="margin-top: 1rem;">
+        <h2>Salary Payment Details</h2>
+        <label for="salary-payer-name">Salary Payer Name</label>
+        <input type="text" id="salary-payer-name" placeholder="Enter Salary Payer name">
       
-        <button onclick="sendOTP()">Send OTP</button>
+        <label for="salary-amount">Amount</label>
+        <input type="number" id="salary-amount" placeholder="Enter amount">
       
-        <div id="otp-section">
-          <label for="otp">Enter OTP</label>
-          <input type="text" id="otp" placeholder="Enter OTP">
-          <button onclick="verifyOTP()">Verify OTP</button>
-        </div>
+        <label for="date">Date</label>
+        <input type="date" id="date" placeholder="Select date">
+      
+      
+        <button onclick="submitSalaryForm()">Submit</button>
       </div>
     
     
       <!-- Your JS backend logic here -->
       <script src="{{ url_for('static', filename='treasurer-auth.js') }}"></script>
-      <script>function goBack() {window.location.href = '/';}</script>
+      <script>function goBack() {window.location.href = '/treasurer-dashboard';}</script>
     </body>
   </html>

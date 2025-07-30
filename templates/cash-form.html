@@ -78,18 +78,51 @@
       </style>
     </head>
     <body>
-      <button onclick="goBack()" class="back-button">← Back to Home</button>
-      <div class="cash-form" id="cash-form">
+      <button onclick="goBack()" class="back-button">← Back to Treasurer Dashboard</button>
+      
+      <div class="cash-form">
         <h2>Cash Donation Entry</h2>
-        <form id="cashDonationForm">
-          <input type="text" name="donorName" placeholder="Donor Name" required>
-          <input type="number" name="amount" placeholder="Amount" required>
-          <input type="text" name="treasurerName" placeholder="Treasurer Name" required>
-          <button type="submit">Submit</button>
-        </form>
+        <label for="donor-name">Name</label>
+        <input type="text" id="donor-name" placeholder="Enter donor name">
+
+        <label for="donation-amount">Amount</label>
+        <input type="number" id="donation-amount" placeholder="Enter amount">
+
+        <button onclick="submitCashForm()">Submit</button>
       </div>
 
-      <script src="{{ url_for('static', filename='cash-form.js') }}"></script>
-      <script>function goBack() {window.location.href = '/';} </script>
+
+      <script>
+      function goBack() {
+        window.location.href = '/treasurer-dashboard';
+      } 
+
+      async function submitCashForm() {
+        const donorName = document.getElementById("donor-name").value;
+        const amount = document.getElementById("donation-amount").value; 
+
+        if (!donorName || !amount) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        const response = await fetch('/submit-cash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donor_name: donorName,
+          amount: amount
+        })
+        });
+
+        const result = await response.json();
+        if (response.ok && result.success) {
+        alert("Cash Donation Received successfully");
+        window.location.href = '/treasurer-dashboard';}
+         else {
+          alert("Error submitting the form.");
+         window.location.href = '/treasurer-dashboard';}
+        }
+      </script>
     </body>
   </html>
