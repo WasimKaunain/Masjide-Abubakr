@@ -47,22 +47,11 @@ def get_main_account_credentials():
 
 # Get authorized gspread client and credentials (for Drive API)
 def get_gsheet_client_and_creds():
-    # creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', SCOPES)
-    service_account_info = {
-        "type": os.getenv("TYPE"),
-        "project_id": os.getenv("PROJECT_ID"),
-        "private_key_id": os.getenv("PRIVATE_KEY_ID"),
-        "private_key": os.getenv("PRIVATE_KEY").replace("\\n","\n"),
-        "client_email": os.getenv("CLIENT_EMAIL"),
-        "client_id": os.getenv("CLIENT_ID"),
-        "auth_uri": os.getenv("AUTH_URI"),
-        "token_uri": os.getenv("TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.getenv("AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.getenv("CLIENT_X509_CERT_URL")
-    }
-    creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+    creds = service_account.Credentials.from_service_account_info(json.loads(base64.b64decode(os.getenv('SERVICE_ACCOUNT_CREDENTIALS')).decode('utf-8')), scopes=SCOPES)
     gc = gspread.authorize(creds)
+
     return gc, creds
+
 
 # Append a row of data to the first sheet
 def append_to_sheet(data, sheet_name):

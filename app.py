@@ -204,7 +204,7 @@ def pay_salary():
 @app.route('/get-transactions')
 def get_transactions():
     sheet_name = get_current_sheet_name()
-    gc,creds = get_gsheet_client_and_creds()
+    gc,_ = get_gsheet_client_and_creds()
     sheet = gc.open(sheet_name).sheet1
     rows = sheet.get_all_records()
     return jsonify(rows)
