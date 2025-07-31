@@ -27,7 +27,7 @@ A modern, secure, and responsive web application designed to support mosque fund
 ---
 
 ## 📂 Project Structure
-
+```
 Mosque-Donation/
 ├── app.py
 ├── requirements.txt
@@ -45,7 +45,7 @@ Mosque-Donation/
 ├── Frontend/
 ├── Backend/
 └── venv/ (ignored from Git)
-
+```
 
 
 ---
