@@ -5,4 +5,4 @@ __pycache__/
 encoded.txt
 main_encoded.txt
 secrets/
-venv/venv/
+venv/
