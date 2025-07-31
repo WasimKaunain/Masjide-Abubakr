@@ -28,27 +28,37 @@ A modern, secure, and responsive web application designed to support mosque fund
 
 ## 📂 Project Structure
 ```
-Mosque-Donation/
+.
 ├── app.py
-├── requirements.txt
 ├── render.yaml
-├── templates/
-│ └── *.html
-├── static/
-│ ├── css/
-│ ├── js/
-│ └── images/
-├── utils/
-│ └── helpers.py
+├── requirements.txt
 ├── secrets/
-│ └── config.json
-├── Frontend/
-├── Backend/
-└── venv/ (ignored from Git)
+│   
+├── static
+│   ├── assets
+│   │   ├── mosque_images
+│   │   ├── mosque_logo.png
+│   │   └── treasurer-form.js
+│   ├── checkout.js
+│   ├── donate.js
+│   ├── image_slider.js
+│   ├── style.css
+│   ├── transaction.js
+│   ├── treasurer-auth.js
+│   └── treasurer-form.js
+├── templates
+│   ├── cash-form.html
+│   ├── index.html
+│   ├── salary-form.html
+│   ├── treasurer-auth.html
+│   └── treasurer-dashboard.html
+├── tree.md
+└── utils
+    ├── email_otp_sender.py
+    └── sheet_operations.py
+
+9 directories, 27 files
 ```
-
-
----
 
 ## 🚀 Getting Started
 
