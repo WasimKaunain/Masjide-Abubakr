@@ -10,12 +10,9 @@
             margin: 0;
             padding: 0;
             background: linear-gradient(120deg, #e0f7fa, #e1bee7);
-            display: flex;
-            flex-direction: column;
             min-height: 100vh;
-            align-items: center;
-            justify-content: flex-start;
         }
+
 
         .top-bar {
             width: 100%;
@@ -25,6 +22,7 @@
             align-items: center;
             background-color: #4527a0;
             color: white;
+            margin-bottom: 200px;
         }
 
         .top-bar h2 {
@@ -63,12 +61,13 @@
             font-family: 'Playfair Display', serif;
             font-size: 48px;
             color: #4a148c;
-            margin-bottom: 40px;
+            margin-bottom: 200px;
             font-weight: 600;
         }
 
         .buttons {
             display: flex;
+            flex-direction: column;
             gap: 60px;
             flex-wrap: wrap;
             justify-content: center;
@@ -76,8 +75,10 @@
         }
 
         .fancy-btn {
+            margin-left: 100px;
+            margin-right: 100px;
             padding: 18px 32px;
-            font-size: 18px;
+            font-size: 28px;
             border: none;
             border-radius: 10px;
             background: linear-gradient(to right, #7b1fa2, #512da8);
@@ -86,6 +87,10 @@
             transition: all 0.4s ease;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             min-width: 250px;
+            min-height: 50px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .fancy-btn:hover {
@@ -105,19 +110,17 @@
 
             .fancy-btn {
                 min-width: 90%;
+                width: 90%;
                 font-size: 16px;
+                display: block;
+                text-align: center;
             }
+
             .buttons{
-                display:flex;
                 flex-direction: column;
                 align-items: center;
-                margin-top: 100px;
-                gap: 20px;
-            }
-            .buttons form {
                 width: 100%;
-                display: flex;
-                justify-content: center;
+                gap: 20px;
             }
     
             .top-bar {
@@ -154,12 +157,8 @@
         <div class="treasurer-name">Mr. {{ treasurer_name }}</div>
 
         <div class="buttons">
-            <form action="{{ url_for('salary_form') }}">
-                <button class="fancy-btn" type="submit">💰 Salary Payment Details</button>
-            </form>
-            <form action="{{ url_for('cash_form') }}">
-                <button class="fancy-btn" type="submit">📥 Receive Cash Donation</button>
-            </form>
+            <a href="{{ url_for('salary_form') }}" class="fancy-btn" style="text-decoration: none;">💰 Salary Payment Details</a>
+            <a href="{{ url_for('cash_form') }}" class="fancy-btn" style="text-decoration: none;">📥 Receive Cash Donation</a>
         </div>
     </div>
 
