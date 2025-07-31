@@ -72,30 +72,29 @@ python app.py
 App will run on: http://127.0.0.1:5000/
 ```
 
-🔐 Environment & Secrets
+## 🔐 Environment & Secrets
+```
 Sensitive keys, emails, and credentials are stored in:
-
 secrets/config.json
-
 .env (if extended with dotenv)
 
-Make sure not to push these files to version control.
+NOTE : Make sure not to push these files to version control.
+```
 
-
-📧 Contact
+## 📧 Contact
+```
 For support, improvements, or collaboration, feel free to reach out:
-
-📩 Email: [wasimkonain@gmail.com]
-
-📱 WhatsApp/Telegram: [+91-7488789638]
-
-🤝 Acknowledgments
+📩 Email: wasimkonain@gmail.com
+📱 WhatsApp/Telegram: +91-7488789638
+```
+### 🤝 Acknowledgments
+```
 JazakAllah Khair to all contributors and donors.
-
 Inspired by community needs and built with love.
+```
 
-
-📜 License
+### 📜 License
+```
 This project is licensed under the MIT License. Feel free to use, modify, and distribute it for non-commercial purposes.
-
+```
 
