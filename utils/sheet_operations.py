@@ -19,13 +19,8 @@ SCOPES = [
 ]
 
 def get_main_account_credentials():
-    token_encoded = os.getenv('MAIN_TOKEN')
-    token_decoded = base64.b64decode(token_encoded).decode("utf-8")
-    main_token=json.loads(token_decoded)
-
-    credentials_encoded = os.getenv('MAIN_CREDENTIALS')
-    credentials_decoded = base64.b64decode(credentials_encoded).decode("utf-8")
-    main_credentials=json.loads(credentials_decoded)
+    main_token=json.loads(base64.b64decode(os.getenv('MAIN_TOKEN')).decode("utf-8"))
+    main_credentials=json.loads(base64.b64decode(os.getenv('MAIN_CREDENTIALS')).decode("utf-8"))
 
 
     creds = None
@@ -37,11 +32,7 @@ def get_main_account_credentials():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_config(main_credentials, SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token_file:
-            token_file.write(creds.to_json())
+            raise RuntimeError("OAuth token is missing or invalid, and cannot re-authenticate on a server.")
 
     return creds
 
