@@ -57,20 +57,20 @@ Mosque-Donation/
 ```bash
 git clone https://github.com/<your-username>/Mosque-Donation.git
 cd Mosque-Donation
-
+```
 
 ### 2. Setup Virtual Environment
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-
+```
 
 ### 3. Run the App Locally
 ```bash 
 python app.py
 App will run on: http://127.0.0.1:5000/
-
+```
 
 🔐 Environment & Secrets
 Sensitive keys, emails, and credentials are stored in:
