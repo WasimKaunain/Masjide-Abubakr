@@ -20,7 +20,7 @@ A modern, secure, and responsive web application designed to support mosque fund
 
 - **Frontend**: HTML, CSS, JavaScript (Jinja2 templates)
 - **Backend**: Python, Flask
-- **Database**: SQLite (can be extended to MySQL/PostgreSQL)
+- **Database**: Google sheets and Drive
 - **Hosting**: Render
 - **Others**: Git, Jinja2, Python `venv`
 
