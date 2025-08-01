@@ -20,7 +20,7 @@ def index():
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.get_json()
-    email = data.get('email').lower
+    email = data.get('email').lower()
     treasurer_email = os.getenv('TREASURER_EMAIL')
 
     if not email:
