@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import datetime
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
-import os,json,base64
+import os,json,base64,time
 
 load_dotenv()
 
@@ -47,7 +47,7 @@ def get_gsheet_client_and_creds():
 def append_to_sheet(data, sheet_name):
 
     gc, creds = get_gsheet_client_and_creds()
-    
+
     try:
         sheet = gc.open(sheet_name).sheet1
 
@@ -85,7 +85,7 @@ def append_to_sheet(data, sheet_name):
         # Open the newly created spreadsheet
         sheet = main_gc.open_by_key(spreadsheet_id).sheet1
         # 👇 Add column headers
-        headers = ['name', 'amount', 'payment_method', 'time']
+        headers = ['Name', 'Amount', 'Payment_Method', 'Time']
         sheet.append_row(headers, value_input_option='USER_ENTERED')
     # Append the row
     sheet.append_row(data, value_input_option='USER_ENTERED')
@@ -206,6 +206,7 @@ def archive_and_create_new_sheet(old_sheet_name, new_title):
         fields='id'
     ).execute()
 
+    time.sleep(2)
     new_sheet = new_file.get('id')
 
     # drive_service.files().update(
@@ -233,9 +234,17 @@ def archive_and_create_new_sheet(old_sheet_name, new_title):
         fields="id"
     ).execute()
 
-    # Step 7: Append headers to new sheet
-    new_sheet.sheet1.append_row(['name', 'amount', 'payment_method','time'])
 
+    # Open the newly created spreadsheet
+    sheet = main_gc.open_by_key(new_sheet)
+    worksheets = sheet.worksheet()
+    if not worksheets:
+        print("No worksheets found in the spreadsheet.")
+    else:
+        sheet = worksheets[0]
+        headers = ['Name', 'Amount', 'Payment_Method', 'Time']
+        sheet.append_row(headers, value_input_option='USER_ENTERED')
+        
     # Step 7: Lock the file (prevent deletion/edit)
     main_drive_service.files().update(
         fileId=new_sheet,
