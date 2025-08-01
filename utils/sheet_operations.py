@@ -245,16 +245,5 @@ def archive_and_create_new_sheet(old_sheet_name, new_title):
         headers = ['Name', 'Amount', 'Payment_Method', 'Time']
         sheet.append_row(headers, value_input_option='USER_ENTERED')
 
-    # Step 7: Lock the file (prevent deletion/edit)
-    main_drive_service.files().update(
-        fileId=new_sheet,
-        body={
-            "contentRestrictions": [
-                {
-                    "readOnly": True,
-                    "reason": "Locked to prevent accidental deletion or modification"
-                }
-            ]
-        }).execute()
     
 
