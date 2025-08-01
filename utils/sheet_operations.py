@@ -49,7 +49,7 @@ def append_to_sheet(data, sheet_name):
     gc, creds = get_gsheet_client_and_creds()
 
     try:
-        sheet = gc.open_by_key('1A-cmA5pITg1y-Vc0TFn0XG6MGTPSlk5I5vnN52k8wOQ').sheet1
+        sheet = gc.open(sheet_name).sheet1
 
     except gspread.exceptions.SpreadsheetNotFound:
         main_creds = get_main_account_credentials()
