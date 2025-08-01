@@ -22,7 +22,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 150px 15px;
+  padding: 120px 30px;
   width:  100%;
   box-sizing: border-box;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4);
@@ -60,6 +60,24 @@ body {
   top: 60px;
   left: 40px;
   z-index: 2;
+}
+
+/* ✅ Language selector at right */
+.language-wrapper {
+  position: absolute;
+  top: 60px;
+  right: 40px;
+  z-index: 2;
+}
+
+#language-selector {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.9); /* visible background */
+  color: #000;
+  border: 1px solid #ccc;
+  cursor: pointer;
 }
 
 .pay-content {
@@ -203,6 +221,30 @@ justify-content: center;
     width: 100%;
     font-size: 1rem;
   }
+
+  .language-wrapper {
+  position: relative !important;
+  top: auto;
+  right: auto;
+  margin-top: 10px;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#language-selector {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #000;
+  border: 1px solid #ccc;
+  width: fit-content;
+  max-width: 160px;
+  text-align: center;
+}
+
 }
 
 @media screen and (min-width: 769px) and (max-width: 1024px) {
@@ -431,29 +473,33 @@ tfoot {
     inset 0 2px 6px rgba(0, 0, 0, 0.3);
   background: linear-gradient(145deg, #003f7f, #002f6c);
 }
-
-
-
-
-
   </style>
 </head>
+
+
 <body>
 
 <!-- Fancy Top Header -->
 <div class="glass-header">
+  <div class="header-content">
+    <div class="mosque-name" data-i18n="mosque_name">Masjid-e-Abu Bakr</div>
+    <div class="mosque-tagline" data-i18n="tagline">"A place of peace, prayer, and purpose"</div>
+  </div>
 
-    <div class="header-content">
-        <div class="mosque-name">Masjid-e-Abu Bakr</div>
-        <div class="mosque-tagline">"A place of peace, prayer, and purpose"</div>
-    </div>
+  <div class="logo-wrapper">
+    <img src="static/assets/mosque_logo.png" class="mosque-logo" alt="Mosque Logo" />
+    <a href="{{ url_for('treasurer_section')}}" class="treasurer-button" data-i18n="treasurer">Treasurer Section</a>
+  </div>
 
-    <div class="logo-wrapper">
-        <img src="static/assets/mosque_logo.png" class="mosque-logo" alt="Mosque Logo" />
-        <a href="{{ url_for('treasurer_section')}}" class="treasurer-button">Treasurer Section</a>
-    </div>
-
+  <!-- Language Selector wrapper -->
+  <div class="language-wrapper">
+    <select class="lang" id="language-selector">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+    </select>
+  </div>
 </div>
+
 
 
 
@@ -470,8 +516,8 @@ tfoot {
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('donate')">Donate</div>
-  <div class="tab" onclick="switchTab('transactions')">Transactions</div>
+  <div class="tab active" data-i18n="donate" onclick="switchTab('donate')">Donate</div>
+  <div class="tab" data-i18n="transactions" onclick="switchTab('transactions')">Transactions</div>
 </div>
 
 
@@ -490,7 +536,7 @@ tfoot {
 </div>
 
 <div class="content" id="donate" style="display: none;">
-  <h2>Select Donation Amount</h2>
+  <h2 data-i18n="select_donation_amount">Select Donation Amount</h2>
   <div style="display: flex; gap: 6px; margin-bottom: 15px;padding-left: 4px;padding-right: 4px;">
     <button onclick="selectAmount(200)">₹200</button>
     <button onclick="selectAmount(300)">₹300</button>
@@ -514,7 +560,7 @@ tfoot {
 
      <!-- 👇 Payee Name Input -->
     <div style="margin-bottom: 20px;">
-        <label for="payee-name">Enter Payee Name:</label><br>
+        <label for="payee-name" data-i18n="enter_payee_name">Enter Payee Name:</label><br>
         <input 
             type="text" 
             id="payee-name-input" 
@@ -526,28 +572,28 @@ tfoot {
 
     <div id="payment-breakup" style="display: none;">
       <div style="display: flex; justify-content: space-between;">
-        <span>Amount:</span>
+        <span data-i18n="amount">Amount:</span>
         <span>₹<span id="total-amount-display">0</span></span>
       </div>
 
       <div style="display: flex; justify-content: space-between;">
-        <span>Fees (2.2%):</span>
+        <span data-i18n="fees">Fees (2.2%):</span>
         <span>₹<span id="fee-display">0</span></span>
       </div>
       
       <div style="display: flex; justify-content: space-between;">
-        <span>GST (18% on fee):</span>
+        <span data-i18n="gst">GST (18% on fee):</span>
         <span>₹<span id="gst-display">0</span></span>
       </div>
       
       <div style="display: flex; justify-content: space-between; font-size: 18px;">
-        <span><strong>Final Payable Amount:</strong></span>
+        <span data-i18n="final_payable_amount"><strong>Final Payable Amount:</strong></span>
         <span><strong>₹<span id="final-amount-display">0</span></strong></span>
       </div>
     
       <button 
         onclick="goToPayment()" 
-        id="pay-now-btn"
+        id="pay-now-btn" data-i18n="pay_now"
         style="padding: 12px 24px;
                font-size: 16px;
                font-weight: bold;
@@ -612,6 +658,36 @@ tfoot {
           const breakupSection = document.getElementById('payment-breakup');
           breakupSection.style.display = name.length > 0 ? 'block' : 'none';
         }
+</script>
+
+<script>
+  async function setLanguage(lang) {
+    const res = await fetch(`/static/lang/${lang}.json`);
+    const translations = await res.json();
+
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+    if (translations.hasOwnProperty(key)) 
+      {
+        el.innerText = translations[key];
+      }
+
+    });
+  }
+
+  // On language selection
+  document.getElementById("language-selector").addEventListener("change", function () {
+    const selectedLang = this.value;
+    localStorage.setItem("preferredLang", selectedLang);
+    setLanguage(selectedLang);
+  });
+
+  // On page load
+  window.addEventListener("DOMContentLoaded", function () {
+    const preferredLang = localStorage.getItem("preferredLang") || "en";
+    document.getElementById("language-selector").value = preferredLang;
+    setLanguage(preferredLang);
+  });
 </script>
 
 
