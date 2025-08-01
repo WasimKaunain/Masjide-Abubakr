@@ -1,0 +1,14 @@
+{
+  "mosque_name": "Masjid-e-Abu Bakr",
+  "tagline": "A place of peace, prayer, and purpose",
+  "treasurer": "Treasurer Section",
+  "donate": "Donate",
+  "transactions" : "Transactions",
+  "select_donation_amount": "Select Donation Amount",
+  "enter_payee_name": "Enter Payee Name",
+  "amount": "Amount",
+  "gst":"GST (18% on fee)",
+  "fees":"Fees",
+  "final_payable_amount":"Total Payable Amount",
+  "pay_now":"Pay Now"
+}
