@@ -20,8 +20,7 @@ SCOPES = [
 
 def get_main_account_credentials():
     main_token=json.loads(base64.b64decode(os.getenv('MAIN_TOKEN')).decode("utf-8"))
-    main_credentials=json.loads(base64.b64decode(os.getenv('MAIN_CREDENTIALS')).decode("utf-8"))
-
+    # main_credentials=json.loads(base64.b64decode(os.getenv('MAIN_CREDENTIALS')).decode("utf-8"))
 
     creds = None
     # token.json stores access and refresh tokens
@@ -46,13 +45,16 @@ def get_gsheet_client_and_creds():
 
 # Append a row of data to the first sheet
 def append_to_sheet(data, sheet_name):
-    main_creds = get_main_account_credentials()
-    main_gc = gspread.authorize(main_creds)
 
     gc, creds = get_gsheet_client_and_creds()
+    
     try:
         sheet = gc.open(sheet_name).sheet1
+
     except gspread.exceptions.SpreadsheetNotFound:
+        main_creds = get_main_account_credentials()
+        main_gc = gspread.authorize(main_creds)
+
         # Create Drive service
         drive_service = build('drive', 'v3', credentials=main_creds)
 
