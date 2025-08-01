@@ -237,14 +237,14 @@ def archive_and_create_new_sheet(old_sheet_name, new_title):
 
     # Open the newly created spreadsheet
     sheet = main_gc.open_by_key(new_sheet)
-    worksheets = sheet.worksheet()
+    worksheets = sheet.worksheets()
     if not worksheets:
         print("No worksheets found in the spreadsheet.")
     else:
         sheet = worksheets[0]
         headers = ['Name', 'Amount', 'Payment_Method', 'Time']
         sheet.append_row(headers, value_input_option='USER_ENTERED')
-        
+
     # Step 7: Lock the file (prevent deletion/edit)
     main_drive_service.files().update(
         fileId=new_sheet,
