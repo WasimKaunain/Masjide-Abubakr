@@ -202,13 +202,13 @@ justify-content: center;
     text-align: center;
   }
 
- .table-wrapper {
+ .content {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
   }
 
-  .table-wrapper table {
+  .content table {
     width: 100%;
     min-width: 600px; /* ensures table is wider than container if needed */
     border-collapse: collapse;
@@ -222,20 +222,20 @@ justify-content: center;
     margin: 15px 0;
   }
 
-  .table-wrapper tbody tr:nth-child(odd) {
+  .contanet table tbody tr:nth-child(odd) {
     background: #f8f9fa;
   }
 
-  .table-wrapper tbody tr:nth-child(even) {
+  .content table tbody tr:nth-child(even) {
     background: #ffffff;
   }
 
   /* Optional: make footer scroll nicely */
-  .table-wrapper tfoot td {
+  .content table tfoot td {
     font-size: 0.9rem;
   }
 
-  .table-wrapper th, .table-wrapper td {
+  .content table th, .content table td {
     font-size: 0.9rem;
     padding: 8px;
     text-align: center;
@@ -657,7 +657,6 @@ table tfoot td {
   <h2 id="table-header" style="text-align:center; margin:10px 0; display:none;"></h2>
 
   <!-- Default Transactions Table -->
-   <div class="table-wrapper">
       <table id="transaction-table">
         <thead>
           <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
@@ -669,10 +668,8 @@ table tfoot td {
           <tr><td colspan="2">Previous Balance</td><td colspan="3" id="previous-balance">₹0</td></tr>
         </tfoot>
       </table>
-  </div>
 
   <!-- Monthly Transactions Table -->
-   <div class="table-wrapper" style="display:none;" id="monthly-wrapper">
       <table id="monthly-transaction-table" style="display:none;">
         <thead>
           <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
@@ -685,7 +682,6 @@ table tfoot td {
           <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
         </tfoot>
       </table>
-  </div>
 
 </div>
 
