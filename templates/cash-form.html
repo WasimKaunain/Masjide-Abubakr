@@ -58,21 +58,53 @@
           outline: none;
         }
       
-        .submit-btn {
-          width: 100%;
-          padding: 10px;
-          background-color: #4CAF50;
+        .cash-form button {
+          position: relative;
+          background: linear-gradient(135deg, #4facfe, #00f2fe);
           color: white;
-          font-size: 16px;
-          font-weight: bold;
           border: none;
-          border-radius: 6px;
+          border-radius: 50px;
+          padding: 18px 50px;
+          font-size: 1rem;
+          margin-top: 16px;
+          font-weight: 600;
           cursor: pointer;
-          margin-top: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          transition: all 0.3s ease;
         }
       
-        .submit-btn:hover {
-          background-color: #45a049;
+        /* Hover effect */
+        .cash-form button:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+          background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        /* Active/pressed effect */
+        .cash-form button:active {
+          transform: translateY(0);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Spinner Styling */
+        #spinner {
+          display: none; /* default hidden */
+          font-size: 1.2rem;
+          animation: spin 1s linear infinite;
+        }
+
+        /* Show spinner when button is loading */
+        .cash-form button.loading #spinner {
+          display: inline-block;
+        }
+
+        /* Spinner animation */
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         .back-button {

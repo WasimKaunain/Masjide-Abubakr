@@ -76,20 +76,51 @@
 
 
         .auth-card button {
-          margin-top: 1.2rem;
-          padding: 0.7rem 1.5rem;
-          font-size: 1rem;
-          background-color: #2e7d32;
+          position: relative;
+          background: linear-gradient(135deg, #4facfe, #00f2fe);
           color: white;
           border: none;
-          border-radius: 0.5rem;
+          margin-top: 16px;
+          border-radius: 50px;
+          padding: 16px 30px;
+          font-size: 1rem;
+          font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.3s;
-        }
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          transition: all 0.3s ease;
+          }
 
         .auth-card button:hover {
-          background-color: #1b5e20;
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+          background: linear-gradient(135deg, #43e97b, #38f9d7);
         }
+
+        .auth-card button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          }
+
+          /* Spinner Styling */
+          #spinner {
+            display: none; /* default hidden */
+            font-size: 1.2rem;
+            animation: spin 1s linear infinite;
+          }
+
+          /* Show spinner when button is loading */
+          #send-otp-button.loading #spinner {
+            display: inline-block;
+          }
+
+          /* Spinner animation */
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
 
         #otp-section {
           margin-top: 1rem;
@@ -107,7 +138,10 @@
         <label for="email">Treasurer Email Address</label>
         <input type="email" id="email" placeholder="Enter email">
       
-        <button onclick="sendOTP()">Send OTP</button>
+        <button id="send-otp-button" onclick="sendOTP()">
+          Send OTP
+          <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+        </button>
       
         <div id="otp-section">
           <label for="otp">Enter OTP</label>

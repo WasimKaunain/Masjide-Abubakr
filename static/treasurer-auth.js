@@ -1,4 +1,11 @@
 async function sendOTP() {
+  const sendOtpButton = document.getElementById("send-otp-button");
+  const spinner = document.getElementById("spinner");
+
+  // Disable button and show spinner
+  sendOtpButton.disabled = true;
+  spinner.style.display = "inline-block";
+
   const email = document.getElementById("email").value;
 
   try {
