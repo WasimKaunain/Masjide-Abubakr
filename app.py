@@ -1,14 +1,27 @@
 from flask import Flask, request, jsonify, render_template,session,url_for,redirect
 from utils.email_otp_sender import send_email_otp, OTP_STORE
-from utils.sheet_operations import get_gsheet_client_and_creds, append_to_sheet, archive_and_create_new_sheet, get_current_sheet_name,get_month_year
-import razorpay, time
+from utils.sheet_operations import*
+import razorpay, time, mysql.connector
 import requests, random, os
-from datetime import datetime
+import datetime
 from dotenv import load_dotenv
 
 
 app = Flask(__name__)
 app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
+
+# Database configuration
+db_config = {
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DATABASE_NAME'),
+    'port': os.getenv('DB_PORT')  # usually 3306
+}
+
+# Test connection
+def get_db_connection():
+    return mysql.connector.connect(**db_config)
 
 razorpay_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_SECRET_KEY")))
 
@@ -16,6 +29,12 @@ razorpay_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv(
 def index():
     rzp_ki = os.getenv('RAZORPAY_KEY_ID')
     return render_template("index.html", rzp_ki=rzp_ki)
+
+@app.route("/config")
+def get_config():
+    return jsonify({
+        "upiId": os.getenv("UPI_ID")
+    })
 
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
@@ -77,82 +96,49 @@ def verify_otp():
 @app.route('/submit-cash', methods=['POST'])
 def submit_cash():
     data = request.get_json()
-    donor_name = data.get('donor_name')
+    txn_type = data.get('type')  # "Credit" or "Debit"
     amount = data.get('amount')
+    timestamp = datetime.datetime.now()
 
+    # Validate common fields
+    if not (txn_type and amount):
+        return jsonify({'success': False, 'message': 'Missing transaction type or amount'}), 400
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Prepare data based on transaction type
+    if txn_type == "Credit":
+        donor_name = data.get('donor_name')
+        if not donor_name:
+            return jsonify({'success': False, 'message': 'Missing donor name'}), 400
+        description = "Donation"
+        # row = [donor_name, amount, "Credit", "Donation", timestamp]
 
-    if not (donor_name and amount ):
-        return jsonify({'success': False, 'message': 'Missing data'}), 400
+    elif txn_type == "Debit":
+        description = data.get('description')
+        if not description:
+            return jsonify({'success': False, 'message': 'Missing description'}), 400
 
-    # Store this in a Google Sheet or Database
-    sheet_name = get_current_sheet_name()  
-    append_to_sheet([donor_name, amount, "Cash", timestamp ],sheet_name)
+    else:
+        return jsonify({'success': False, 'message': 'Invalid transaction type'}), 400
 
-    return jsonify({'success': True})
-
-
-@app.route("/verify_payment", methods=["POST"])
-def verify_payment():
     try:
-        data = request.get_json()
-        razorpay_payment_id = data.get('razorpay_payment_id')
-        razorpay_order_id = data.get('razorpay_order_id')
-        razorpay_signature = data.get('razorpay_signature')
+        conn = get_db_connection()
+        cursor = conn.cursor()  
 
-        # Verify signature
-        params_dict = {
-            'razorpay_order_id': razorpay_order_id,
-            'razorpay_payment_id': razorpay_payment_id,
-            'razorpay_signature': razorpay_signature
-        }
+        query = """
+            INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
+        conn.commit()
 
-        result = razorpay_client.utility.verify_payment_signature(params_dict)
+        cursor.close()
+        conn.close()
 
-        # If signature is valid
-        return jsonify({"status": "success", "message": "Payment verified successfully."}), 200
+        return jsonify({'success': True})
 
-    except razorpay.errors.SignatureVerificationError:
-        return jsonify({"status": "failure", "message": "Payment verification failed."}), 400
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+    except mysql.connector.Error as err:
+        return jsonify({'success': False, 'message': str(err)}), 500
 
-@app.route('/create_order', methods=['POST'])
-def create_order():
-    try:
-        data = request.get_json()
-        amount = data.get("amount")
-        if not amount:
-            return jsonify({"status": "failure", "message": "Amount is required"}), 400
-
-        # Amount in paise
-        order = razorpay_client.order.create({
-            "amount": int(amount) * 100,
-            "currency": "INR",
-            "payment_capture": "1"  # Auto capture
-        })
-
-        return jsonify({
-            "status": "success",
-            "order_id": order["id"],
-            "amount": order["amount"],
-            "currency": order["currency"],
-            "key": os.getenv("RAZORPAY_KEY_ID")
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route("/payment-success", methods=["POST"])
-def payment_success():
-    data = request.get_json()
-    name = data["name"]
-    amount = data["amount"]
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    sheet_name = get_current_sheet_name() 
-    append_to_sheet([name, amount / 100, "Online", timestamp],sheet_name)  # Store in sheet
-    return jsonify({"status": "success"})
 
 @app.route('/treasurer-section')
 def treasurer_section():
@@ -171,49 +157,161 @@ def salary_form():
     return render_template('salary-form.html')
 
 
+import datetime
+from flask import request, jsonify
+
+# Assumes you have get_db_connection(), get_common_month_year(),
+# and archive_and_create_new_table() functions defined.
+
 @app.route('/pay-salary', methods=['POST'])
 def pay_salary():
-    data = request.get_json()
-    payer = data.get('payerName')
-    amount = float(data.get('amount'))
-    pay_date = data.get('date')
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-    sheet_name = get_current_sheet_name()
+    try:
+        data = request.get_json()
+        payer = data.get('payerName')
+        amount = float(data.get('amount'))
+        pay_date_str = data.get('date')
+        
+        # Step 1: Get the common month and year to archive against.
+        common_year, common_month = get_common_month_year()
+        print(f"Most common month/year in transactions: {common_month}/{common_year}")
 
-    common_year,common_month = get_month_year(sheet_name)
-    # Step 3: Rename the sheet
-    new_title = f"Donation {common_year} {common_month}"
+        new_title = f"transactions_{common_year}_{common_month:02d}"
+        
+        # Step 2: Insert the new salary payment into the transactions table
+        print("Inserting new salary payment...")
+        cursor.execute(
+            """INSERT INTO transactions (Name, Amount, Type, Description, Timestamp) 
+            VALUES (%s, %s, %s, %s, %s)""",
+            (payer, amount, 'Debit', 'Salary Paid', pay_date_str)
+        )
+        conn.commit()
+        print("Salary payment inserted successfully.")
+        
+        # Step 3: Calculate totals and remaining amount for the common month and year.
+        print("Calculating totals for the common month...")
+        
+        # Calculate total donations for the common month
+        cursor.execute("SELECT SUM(Amount) FROM transactions WHERE Type = 'Credit'")
+        total_donations = cursor.fetchone()[0] or 0.0
+        total_donations = float(total_donations)
 
-    append_to_sheet([payer, amount, 'Salary Paid', pay_date], sheet_name)
+        # aininCalculate total debit transactions for the common month
+        cursor.execute("SELECT SUM(Amount) FROM transactions WHERE Type = 'Debit'")
+        total_debit = cursor.fetchone()[0] or 0.0
+        total_debit = float(total_debit)
+        
+        remaining = total_donations - total_debit
 
-    # Calculate totals
-    gc, creds = get_gsheet_client_and_creds()
-    sheet = gc.open(sheet_name).sheet1
-    records = sheet.get_all_values()
-    total_donations = sum(float(row[1]) for row in records[1:] if row[2] in ['Cash', 'Online'])
-    total_salary_paid = sum(float(row[1]) for row in records[1:] if row[2] == 'Salary Paid')
-    remaining = total_donations - total_salary_paid
+        # Step 4: Get last row from monthly_report to calculate prev_amount and total_remaining_amount
+        cursor.execute("SELECT total_remaining_amount FROM monthly_report ORDER BY month_name DESC LIMIT 1")
+        last_row = cursor.fetchone()
+        
+        prev_amount = float(last_row[0]) if last_row else 0.0
+        total_rem_amount = prev_amount + remaining
+        cursor.execute(""" INSERT INTO monthly_report (month_name,total_credit,total_debit,remaining_amount,previous_amount,total_remaining_amount) VALUES (%s,%s,%s,%s,%s,%s)""", (new_title,total_donations,total_debit,remaining,prev_amount,total_rem_amount))
+        conn.commit()
 
-    # Append remaining
-    sheet.append_row(['Remaining for this month = ₹' + str(remaining)])
+        print("Monthly report updated successfully.")
+        print(f"Monthly donations: ₹{total_donations}")
+        print(f"Monthly debits: ₹{total_debit}")
+        print(f"Remaining balance: ₹{remaining}")
+        
+        # Step 4: Archive the table and create a new one.
+        archive_and_create_new_table(new_title)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Salary paid successfully.',
+            'remaining_balance': remaining
+        })
 
-    # Archive and create new sheet
-    archive_and_create_new_sheet(sheet_name,new_title)
-    return jsonify({'success': True})
+    except Exception as e:
+        conn.rollback() # Rollback the transaction on error
+        print(f"❌ A critical error occurred: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+    finally:
+        conn.close()
 
 @app.route('/get-transactions')
 def get_transactions():
-    sheet_name = get_current_sheet_name()
-    gc,_ = get_gsheet_client_and_creds()
-    sheet = gc.open(sheet_name).sheet1
-    rows = sheet.get_all_records()
-    return jsonify(rows)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)  # Return rows as dictionaries
+
+        cursor.execute("SELECT Name, Amount, Type, Description, Timestamp FROM transactions ORDER BY Timestamp DESC")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(rows)
+
+    except Exception as e:
+        print(f"Error fetching transactions: {e}")
+        return jsonify({'error': 'Failed to fetch transactions'}), 500
+
+@app.route('/get-previous-balance')
+def get_previous_balance():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT total_remaining_amount FROM monthly_report ORDER BY month_name DESC LIMIT 1")
+        row = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if row:
+            return jsonify({'previous_balance': float(row['total_remaining_amount'])})
+        else:
+            return jsonify({'previous_balance': 0.0})
+    except Exception as e:
+        print(f"Error fetching previous balance: {e}")
+        return jsonify({'error': 'Failed to fetch balance'}), 500
+    
+@app.route('/get_tables')
+def get_tables():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SHOW TABLES LIKE 'transactions%'")
+    tables = [row[0] for row in cursor.fetchall()]
+    return jsonify(tables)
 
 
-def calculate_adjusted_amount(settlement_amount):
-    # Fees = 1.99% + 18% GST on fees = approx 2.35%
-    fees_percent = 0.0235
-    return int((settlement_amount * 100) / (1 - fees_percent))
+
+@app.route('/get_table_data/<table>')
+def get_table_data(table):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Get transactions
+    cursor.execute(f"SELECT * FROM `{table}`")
+    rows = cursor.fetchall()
+
+    cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Credit'")
+    row = cursor.fetchone()
+    total_credit = float(row["total"] or 0.0)
+
+    cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Debit'")
+    row = cursor.fetchone()
+    total_debit = float(row["total"] or 0.0)
+
+    remaining = total_credit - total_debit
+
+    conn.close()
+    cursor.close()
+
+    return jsonify({
+        "rows": rows,
+        "total_credit": total_credit,
+        "total_debit": total_debit,
+        "remaining": remaining
+    })
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=10000)

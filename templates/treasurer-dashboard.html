@@ -22,8 +22,17 @@
             align-items: center;
             background-color: #4527a0;
             color: white;
+            padding: 10px 20px;
             margin-bottom: 200px;
         }
+
+        .top-bar form {
+            display: flex;
+            justify-content: flex-end; /* aligns button to right */
+            padding-right: 10px;       /* adjust this to move left */
+            margin-right: 20px;
+            }
+
 
         .top-bar h2 {
             margin-left: 20px;
@@ -38,7 +47,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-right:10px;
+            margin-right:20 px;
         }
 
         .btn-logout:hover {
@@ -158,7 +167,7 @@
 
         <div class="buttons">
             <a href="{{ url_for('salary_form') }}" class="fancy-btn" style="text-decoration: none;">💰 Salary Payment Details</a>
-            <a href="{{ url_for('cash_form') }}" class="fancy-btn" style="text-decoration: none;">📥 Receive Cash Donation</a>
+            <a href="{{ url_for('cash_form') }}" class="fancy-btn" style="text-decoration: none;">📥 Create Transaction</a>
         </div>
     </div>
 

@@ -14,44 +14,67 @@
           align-items: center;
           height: 100vh;
           margin: 0;
-        }
-      
+          }
+            
         .cash-form {
-          background: #ffffffdd;
-          padding: 30px 40px;
-          border-radius: 20px;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-          width: 100%;
-          max-width: 400px;
+          width: 350px;
+          margin: 40px auto;
+          padding: 20px;
+          background-color: #f9f9f9;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          font-family: Arial, sans-serif;
         }
       
         .cash-form h2 {
           text-align: center;
-          color: #333;
           margin-bottom: 20px;
+          color: #333;
         }
       
-        .cash-form input {
-          width: 100%;
-          padding: 12px 15px;
-          margin: 10px 0;
+        .form-group {
+          margin-bottom: 15px;
+          display: flex;
+          flex-direction: column;
+        }
+      
+        .form-group label {
+          margin-bottom: 6px;
+          font-weight: bold;
+          color: #444;
+        }
+      
+        .form-group input,
+        .form-group select {
+          padding: 8px 10px;
           border: 1px solid #ccc;
-          border-radius: 10px;
-          font-size: 14px;
+          border-radius: 5px;
+          font-size: 15px;
         }
       
-        .cash-form button {
+        .form-group input:focus,
+        .form-group select:focus {
+          border-color: #5c9ded;
+          outline: none;
+        }
+      
+        .submit-btn {
           width: 100%;
-          padding: 12px;
-          background-color: #4facfe;
-          border: none;
+          padding: 10px;
+          background-color: #4CAF50;
           color: white;
           font-size: 16px;
-          border-radius: 10px;
+          font-weight: bold;
+          border: none;
+          border-radius: 6px;
           cursor: pointer;
-          transition: background 0.3s;
+          margin-top: 10px;
         }
       
+        .submit-btn:hover {
+          background-color: #45a049;
+        }
+
         .back-button {
         position: absolute;
         top: 20px;
@@ -70,26 +93,49 @@
         .back-button:hover {
         background-color: #1b5e20;
         }
-
-
-        .cash-form button:hover {
-          background-color: #00c6ff;
-        }
       </style>
     </head>
     <body>
       <button onclick="goBack()" class="back-button">← Back to Treasurer Dashboard</button>
       
       <div class="cash-form">
-        <h2>Cash Donation Entry</h2>
-        <label for="donor-name">Name</label>
-        <input type="text" id="donor-name" placeholder="Enter donor name">
+        <h2>Transaction Entry</h2>
 
-        <label for="donation-amount">Amount</label>
-        <input type="number" id="donation-amount" placeholder="Enter amount">
+        <!-- Transaction Type Dropdown -->
+        <div class="form-group">
+          <label for="transaction-type">Transaction Type</label>
+          <select id="transaction-type" onchange="handleTypeChange()">
+            <option value="Credit" selected>Credit</option>
+            <option value="Debit">Debit</option>
+          </select>
+        </div>
+      
+        <!-- Name Field (Credit only) -->
+        <div class="form-group" id="name-field">
+          <label for="donor-name">Name</label>
+          <input type="text" id="donor-name" placeholder="Enter donor name">
+        </div>
+      
+        <!-- Amount Field (Always visible) -->
+        <div class="form-group">
+          <label for="donation-amount">Amount</label>
+          <input type="number" id="donation-amount" placeholder="Enter amount">
+        </div>
+      
+        <!-- Description Field (Debit only) -->
+        <div class="form-group" id="description-field" style="display: none;">
+          <label for="description">Description</label>
+          <input type="text" id="description" placeholder="Enter description" maxlength="100">
+        </div>
+      
+        <button id="submit-button" onclick="submitCashForm()">
+          Submit
+          <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+        </button>
 
-        <button onclick="submitCashForm()">Submit</button>
       </div>
+
+
 
 
       <script>
@@ -97,32 +143,97 @@
         window.location.href = '/treasurer-dashboard';
       } 
 
-      async function submitCashForm() {
-        const donorName = document.getElementById("donor-name").value;
-        const amount = document.getElementById("donation-amount").value; 
+        function handleTypeChange() {
+          const type = document.getElementById("transaction-type").value;
+          const nameField = document.getElementById("name-field");
+          const descriptionField = document.getElementById("description-field");
 
-        if (!donorName || !amount) {
-          alert("Please fill in all fields.");
-          return;
-        }
+          if (type === "Credit") {
+            nameField.style.display = "flex";
+            descriptionField.style.display = "none";
+          } else {
+            nameField.style.display = "none";
+            descriptionField.style.display = "flex";
+          }
+          }
 
-        const response = await fetch('/submit-cash', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          donor_name: donorName,
-          amount: amount
-        })
-        });
+  async function submitCashForm() {
+  const submitBtn = document.getElementById("submit-button");
+  const spinner = document.getElementById("spinner");
 
-        const result = await response.json();
-        if (response.ok && result.success) {
-        alert("Cash Donation Received successfully");
-        window.location.href = '/treasurer-dashboard';}
-         else {
-          alert("Error submitting the form.");
-         window.location.href = '/treasurer-dashboard';}
-        }
+  // Disable button and show spinner
+  submitBtn.disabled = true;
+  spinner.style.display = "inline-block";
+
+  const type = document.getElementById("transaction-type").value;
+  const amount = document.getElementById("donation-amount").value;
+
+  if (!amount) {
+    alert("Please enter the amount.");
+    resetSubmitButton();
+    return;
+  }
+
+  let payload = {
+    type: type,
+    amount: amount,
+    donor_name: null,
+    description: null
+  };
+
+  if (type === "Credit") {
+    const donorName = document.getElementById("donor-name").value;
+    if (!donorName) {
+      alert("Please enter the donor name.");
+      resetSubmitButton();
+      return;
+    }
+    payload.donor_name = donorName;
+
+  } else if (type === "Debit") {
+    const description = document.getElementById("description").value;
+    if (!description) {
+      alert("Please enter a description.");
+      resetSubmitButton();
+      return;
+    }
+    if (description.length > 100) {
+      alert("Description must be 100 characters or less.");
+      resetSubmitButton();
+      return;
+    }
+    payload.description = description;
+  }
+
+  try {
+    const response = await fetch('/submit-cash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      alert("Transaction submitted successfully.");
+      window.location.href = '/treasurer-dashboard';
+    } else {
+      alert("Error submitting the form.");
+      resetSubmitButton();
+    }
+
+  } catch (error) {
+    console.error("Submission failed:", error);
+    alert("Something went wrong. Please try again.");
+    resetSubmitButton();
+  }
+
+  function resetSubmitButton() {
+    submitBtn.disabled = false;
+    spinner.style.display = "none";
+  }
+}
+
       </script>
     </body>
   </html>

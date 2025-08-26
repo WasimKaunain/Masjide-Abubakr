@@ -199,6 +199,31 @@ justify-content: center;
   white-space: nowrap;
 }
 
+/* Center dropdown */
+  .dropdown-container {
+    justify-content: center; /* center the dropdown */
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  #table-selector {
+    width: 80%;
+    max-width: 200px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* Center table header */
+  #table-header {
+    text-align: center;
+    font-size: 1.6rem;
+    margin: 15px 0;
+  }
+
+  table {
+    width: 100%;
+  }
+
 }
 
 @media screen and (max-width: 480px) {
@@ -408,18 +433,66 @@ justify-content: center;
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
   margin-bottom: 40px; }
 
+table thead {
+  background: #343a40;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem; }
+  width: 95%;
+  margin: 20px auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background: white; }
 
-th, td {
-  padding: 10px;
-  border: 1px solid #ccc;
-  text-align: center;}
+table th, table td {
+  padding: 12px 15px;
+  text-align: center;
+  font-size: 14px;
+}
 
-tfoot {
-  font-weight: bold; }
+
+/* Alternate row colors */
+table tbody tr:nth-child(odd) {
+  background: #f8f9fa;
+}
+
+table tbody tr:nth-child(even) {
+  background: #ffffff;
+}
+
+/* Hover effect */
+table tbody tr:hover {
+  background: #e9f5ff;
+  transition: 0.2s ease-in-out;
+}
+
+/* Footer styling */
+table tfoot {
+  background: #f1f3f5;
+  font-weight: bold;
+}
+
+table tfoot td {
+  padding: 12px;
+  text-align: center;
+  font-size: 15px;
+}
+
+/* Section title (month-year) */
+#table-header {
+  font-size: 20px;
+  font-weight: bold;
+  color: #343a40;
+  margin: 15px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 .treasurer-button {
   margin-top: 10px;             /* spacing below logo */
@@ -483,6 +556,41 @@ tfoot {
     inset 0 2px 6px rgba(0, 0, 0, 0.3);
   background: linear-gradient(145deg, #003f7f, #002f6c);
 }
+
+.dropdown-container {
+  width: 100%;               /* take full row */
+  display: flex;
+  justify-content: flex-end; /* push dropdown to right */
+  margin: 10px 20px 0 0;
+}
+
+
+  #table-selector {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f9f9f9;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  #table-selector:hover {
+    border-color: #007bff;
+    background: #eef6ff;
+  }
+
+  #table-selector:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  #table-selector option {
+    padding: 10px;
+  }
   </style>
 </head>
 
@@ -533,17 +641,45 @@ tfoot {
 
 
 <div class="content" id="transactions" style="display: none;">
+
+  <div class="dropdown-container">
+    <select id="table-selector" onchange="loadTableData()">
+      <option value="">Select Month</option>
+    </select>
+  </div>
+
+  <!-- Month-Year heading (only shown when month selected) -->
+  <h2 id="table-header" style="text-align:center; margin:10px 0; display:none;"></h2>
+
+  <!-- Default Transactions Table -->
   <table id="transaction-table">
     <thead>
-      <tr><th>Name</th><th>Amount</th><th>Payment Method</th><th>Time</th></tr>
+      <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
     </thead>
     <tbody></tbody>
     <tfoot>
-         <tr><td colspan="4" style="height: 20px;">&nbsp;</td></tr>
-      <tr><td colspan="1">Total</td><td colspan="2" id="total-amount">₹0</td></tr>
+      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+      <tr><td colspan="2">Total Amount</td><td colspan="3" id="total-amount">₹0</td></tr>
+      <tr><td colspan="2">Previous Balance</td><td colspan="3" id="previous-balance">₹0</td></tr>
     </tfoot>
   </table>
+
+  <!-- Monthly Transactions Table -->
+  <table id="monthly-transaction-table" style="display:none;">
+    <thead>
+      <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
+    </thead>
+    <tbody id="monthly-body"></tbody>
+    <tfoot>
+      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+      <tr><td colspan="2"><b>Total Credit Amounts</b></td><td colspan="3" id="total-credit">₹0</td></tr>
+      <tr><td colspan="2"><b>Total Debit Amounts</b></td><td colspan="3" id="total-debit">₹0</td></tr>
+      <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
+    </tfoot>
+  </table>
+
 </div>
+
 
 <div class="content" id="donate" style="display: none;">
   <h2 data-i18n="select_donation_amount">Select Donation Amount</h2>
@@ -553,70 +689,23 @@ tfoot {
     <button onclick="selectAmount(500)">₹500</button>
   </div>
 
-  <div id="calculation-section" style="display: none; padding: 20px;
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.1); /* semi-transparent */
-    box-shadow: 0 8px 32px 0 rgba(42, 187, 78, 0.37);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: rgb(3, 0, 0);
-    width: 80%;
-    margin: auto;
-    margin-top: 20px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 16px;
-    line-height: 1.8;">
-
-     <!-- 👇 Payee Name Input -->
-    <div style="margin-bottom: 20px;">
-        <label for="payee-name" data-i18n="enter_payee_name">Enter Payee Name:</label><br>
-        <input 
-            type="text" 
-            id="payee-name-input" 
-            placeholder="Enter Payee Name"
-            oninput="showPaymentBreakup()" 
-            style="padding: 8px; width: 60%; margin-top: 10px;
-                   border-radius: 8px; border: 1px solid #ccc; font-size: 16px;" />
-    </div>
-
-    <div id="payment-breakup" style="display: none;">
-      <div style="display: flex; justify-content: space-between;">
-        <span data-i18n="amount">Amount:</span>
-        <span>₹<span id="total-amount-display">0</span></span>
-      </div>
-
-      <div style="display: flex; justify-content: space-between;">
-        <span data-i18n="fees">Fees (2.2%):</span>
-        <span>₹<span id="fee-display">0</span></span>
-      </div>
-      
-      <div style="display: flex; justify-content: space-between;">
-        <span data-i18n="gst">GST (18% on fee):</span>
-        <span>₹<span id="gst-display">0</span></span>
-      </div>
-      
-      <div style="display: flex; justify-content: space-between; font-size: 18px;">
-        <span data-i18n="final_payable_amount"><strong>Final Payable Amount:</strong></span>
-        <span><strong>₹<span id="final-amount-display">0</span></strong></span>
-      </div>
-    
-      <button 
-        onclick="goToPayment()" 
-        id="pay-now-btn" data-i18n="pay_now"
-        style="padding: 12px 24px;
-               font-size: 16px;
-               font-weight: bold;
-               color: white;
-               background: linear-gradient(135deg, #28a745, #218838);
-               border: none;
-               border-radius: 10px;
-               box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
-               cursor: pointer;
-               transition: all 0.3s ease;">
-        Pay Now
-      </button>
-    </div>
+  <button 
+    onclick="goToPayment()" 
+    id="pay-now-btn" data-i18n="pay_now"
+    style="padding: 12px 24px;
+            display: none;
+           font-size: 16px;
+           font-weight: bold;
+           color: white;
+           background: linear-gradient(135deg, #28a745, #218838);
+           border: none;
+           border-radius: 10px;
+           box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
+           cursor: pointer;
+           transition: all 0.3s ease;">
+    Pay Now
+  </button>
+  
 
     <script>
       const btn = document.getElementById('pay-now-btn');
@@ -661,15 +750,6 @@ tfoot {
 </footer>
 
 
-
-<script>
-        function showPaymentBreakup() {
-          const name = document.getElementById('payee-name-input').value.trim();
-          const breakupSection = document.getElementById('payment-breakup');
-          breakupSection.style.display = name.length > 0 ? 'block' : 'none';
-        }
-</script>
-
 <script>
   async function setLanguage(lang) {
     const res = await fetch(`/static/lang/${lang}.json`);
@@ -698,6 +778,106 @@ tfoot {
     document.getElementById("language-selector").value = preferredLang;
     setLanguage(preferredLang);
   });
+
+  // Load dropdown on page load
+window.onload = function() {
+  fetch('/get_tables')
+    .then(res => res.json())
+    .then(tables => {
+      populateDropdown(tables);
+    });
+};
+
+function populateDropdown(tableNames) {
+  const selector = document.getElementById("table-selector");
+  selector.innerHTML = ""; // clear old options
+
+  // Default option
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = "";
+  defaultOpt.textContent = "Select Month";
+  selector.appendChild(defaultOpt);
+
+  tableNames.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+
+    if (name === "transactions") {
+      // current month
+      opt.textContent = "Current Month";
+    } else {
+      // format e.g. transactions_2025_08 → August, 2025
+      const parts = name.split("_");  // ["transactions","2025","08"]
+      const year = parts[1];
+      const month = parts[2];
+      const monthName = new Date(year, month - 1).toLocaleString("default", { month: "long" });
+      opt.textContent = `${monthName}, ${year}`;
+    }
+
+    selector.appendChild(opt);
+  });
+}
+
+
+function renderTable(rows, total_credit, total_debit, remaining) {
+  // fill transaction rows
+  let bodyHtml = rows.map(row => `
+    <tr>
+      <td>${row.Name}</td>
+      <td>₹${(Number(row.Amount) || 0).toFixed(2)}</td>
+      <td>${row.Type}</td>
+      <td>${row.Description}</td>
+      <td>${row.Timestamp}</td>
+    </tr>
+  `).join("");
+
+  document.getElementById("monthly-body").innerHTML = bodyHtml;
+
+  // update totals
+  document.getElementById("total-credit").innerText = "₹" + total_credit.toFixed(2);
+  document.getElementById("total-debit").innerText = "₹" + total_debit.toFixed(2);
+  document.getElementById("remaining-amount").innerText = "₹" + remaining.toFixed(2);
+}
+
+
+
+// Load data on selecting table
+function loadTableData() 
+{
+  let tableName = document.getElementById("table-selector").value;
+
+  // 👉 Case 1: Current Month (transactions)
+  if (tableName === "transactions" || tableName === "") {
+    document.getElementById("transaction-table").style.display = "table";
+    document.getElementById("monthly-transaction-table").style.display = "none";
+    document.getElementById("table-header").style.display = "none";
+    return; // stop here, don’t fetch archived data
+  }
+
+  // 👉 Case 2: Past months (monthly summary)
+  document.getElementById("transaction-table").style.display = "none";
+  document.getElementById("monthly-transaction-table").style.display = "table";
+  document.getElementById("table-header").style.display = "block";
+
+  fetch(`/get_table_data/${tableName}`)
+    .then(res => res.json())
+    .then(data => {
+      // Extract month-year
+      const parts = tableName.split("_");  // e.g. table_2025_08
+      const year = parts[1];
+      const month = parts[2];
+      const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
+
+      // Set header
+      document.getElementById("table-header").innerText = `${monthName}, ${year}`;
+
+      // Populate table
+      renderTable(data.rows, data.total_credit, data.total_debit, data.remaining);
+    })
+    .catch(err => console.error("Error loading data:", err));
+}
+
+
 </script>
 
 
@@ -727,37 +907,46 @@ tfoot {
 
   // Load transactions data if tab is "transactions"
   if (tab === 'transactions') {
-    fetch('/get-transactions')
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.querySelector('#transaction-table tbody');
-        tbody.innerHTML = '';
-        let total = 0;
-        data.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${row.name}</td><td>₹${row.amount}</td><td>${row.payment_method}</td><td>${row.time}</td>`;
-          tbody.appendChild(tr);
-          total += parseFloat(row.amount);
-        });
-        document.getElementById('total-amount').textContent = '₹' + total;
-      });
+fetch('/get-transactions')
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.querySelector('#transaction-table tbody');
+    tbody.innerHTML = '';
+    let total = 0;
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${row.Name}</td><td>₹${row.Amount}</td><td>${row.Type}</td><td>${row.Description}</td><td>${row.Timestamp}</td>`;
+      tbody.appendChild(tr);
+
+      const amount = parseFloat(row.Amount);
+      const type = row.Type.trim().toLowerCase();  // Normalize the type
+
+      if (type === 'credit') {
+        total += amount;
+      } else if (type === 'debit') {
+        total -= amount;
+      }
+    });
+
+    document.getElementById('total-amount').textContent = '₹' + total.toFixed(2);
+  });
+
+  // Fetch previous balance
+  fetch('/get-previous-balance')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('previous-balance').textContent = '₹' + parseFloat(data.previous_balance).toFixed(2);
+    });
+
   }
 }
 
 
-function selectAmount(amount) {
-  const fee = parseFloat((amount * 0.022).toFixed(2));
-  const gst = parseFloat((fee * 0.18).toFixed(2));
-  const finalAmount = amount + fee + gst;
-
-  document.getElementById('calculation-section').style.display = 'block';
-  document.getElementById('total-amount-display').textContent = amount;
-  document.getElementById('fee-display').textContent = fee;
-  document.getElementById('gst-display').textContent = gst;
-  document.getElementById('final-amount-display').textContent = finalAmount;
-
-  selectedAmount = finalAmount; // Save for payment processing
-}
+function selectAmount(amount) 
+  {
+    selectedAmount = amount;
+    document.getElementById("pay-now-btn").style.display = "inline-block";
+  }
 
 </script>
 
@@ -793,7 +982,6 @@ function selectAmount(amount) {
   });
 </script>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="/static/checkout.js"></script>
 <script src="{{ url_for('static', filename='image_slider.js') }}"></script>
 
