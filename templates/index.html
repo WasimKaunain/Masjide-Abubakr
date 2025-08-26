@@ -202,6 +202,19 @@ justify-content: center;
     text-align: center;
   }
 
+ .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .table-wrapper table {
+    width: 100%;
+    min-width: 600px; /* ensures table is wider than container if needed */
+    border-collapse: collapse;
+    white-space: nowrap;
+  }
+
   /* Center table header */
   #table-header {
     text-align: center;
@@ -209,10 +222,25 @@ justify-content: center;
     margin: 15px 0;
   }
 
-  table {
-    width: 100%;
+  .table-wrapper tbody tr:nth-child(odd) {
+    background: #f8f9fa;
   }
 
+  .table-wrapper tbody tr:nth-child(even) {
+    background: #ffffff;
+  }
+
+  /* Optional: make footer scroll nicely */
+  .table-wrapper tfoot td {
+    font-size: 0.9rem;
+  }
+
+  .table-wrapper th, .table-wrapper td {
+    font-size: 0.9rem;
+    padding: 8px;
+    text-align: center;
+  }
+  
 }
 
 @media screen and (max-width: 480px) {
@@ -279,19 +307,6 @@ justify-content: center;
   .tab {
     font-size: 1rem;
     padding: 12px 24px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
-  th, td {
-    font-size: 0.9rem;
-    padding: 8px;
   }
 }
 
@@ -641,31 +656,35 @@ table tfoot td {
   <h2 id="table-header" style="text-align:center; margin:10px 0; display:none;"></h2>
 
   <!-- Default Transactions Table -->
-  <table id="transaction-table">
-    <thead>
-      <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
-      <tr><td colspan="2">Total Amount</td><td colspan="3" id="total-amount">₹0</td></tr>
-      <tr><td colspan="2">Previous Balance</td><td colspan="3" id="previous-balance">₹0</td></tr>
-    </tfoot>
-  </table>
+   <div class="table-wrapper">
+      <table id="transaction-table">
+        <thead>
+          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
+        </thead>
+        <tbody></tbody>
+        <tfoot>
+          <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+          <tr><td colspan="2">Total Amount</td><td colspan="3" id="total-amount">₹0</td></tr>
+          <tr><td colspan="2">Previous Balance</td><td colspan="3" id="previous-balance">₹0</td></tr>
+        </tfoot>
+      </table>
+  </div>
 
   <!-- Monthly Transactions Table -->
-  <table id="monthly-transaction-table" style="display:none;">
-    <thead>
-      <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
-    </thead>
-    <tbody id="monthly-body"></tbody>
-    <tfoot>
-      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
-      <tr><td colspan="2"><b>Total Credit Amounts</b></td><td colspan="3" id="total-credit">₹0</td></tr>
-      <tr><td colspan="2"><b>Total Debit Amounts</b></td><td colspan="3" id="total-debit">₹0</td></tr>
-      <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
-    </tfoot>
-  </table>
+   <div class="table-wrapper" style="display:none;" id="monthly-wrapper">
+      <table id="monthly-transaction-table" style="display:none;">
+        <thead>
+          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
+        </thead>
+        <tbody id="monthly-body"></tbody>
+        <tfoot>
+          <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+          <tr><td colspan="2"><b>Total Credit Amounts</b></td><td colspan="3" id="total-credit">₹0</td></tr>
+          <tr><td colspan="2"><b>Total Debit Amounts</b></td><td colspan="3" id="total-debit">₹0</td></tr>
+          <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
+        </tfoot>
+      </table>
+  </div>
 
 </div>
 
