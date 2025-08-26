@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify, render_template,session,url_for,redirect
 from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import*
-import razorpay, time, mysql.connector
-import requests, random, os
-import datetime
+import time, mysql.connector
+import os, datetime
 from dotenv import load_dotenv
 
 
 app = Flask(__name__)
 app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
+load_dotenv()
 
 # Database configuration
 db_config = {
@@ -23,12 +23,9 @@ db_config = {
 def get_db_connection():
     return mysql.connector.connect(**db_config)
 
-razorpay_client = razorpay.Client(auth=(os.getenv("RAZORPAY_KEY_ID"), os.getenv("RAZORPAY_SECRET_KEY")))
-
 @app.route("/")
 def index():
-    rzp_ki = os.getenv('RAZORPAY_KEY_ID')
-    return render_template("index.html", rzp_ki=rzp_ki)
+    return render_template("index.html")
 
 @app.route("/config")
 def get_config():
@@ -175,7 +172,7 @@ def pay_salary():
         pay_date_str = data.get('date')
         
         # Step 1: Get the common month and year to archive against.
-        common_year, common_month = get_common_month_year()
+        common_year, common_month = get_common_month_year(conn)
         print(f"Most common month/year in transactions: {common_month}/{common_year}")
 
         new_title = f"transactions_{common_year}_{common_month:02d}"
@@ -220,7 +217,7 @@ def pay_salary():
         print(f"Remaining balance: ₹{remaining}")
         
         # Step 4: Archive the table and create a new one.
-        archive_and_create_new_table(new_title)
+        archive_and_create_new_table(new_title,conn)
         
         return jsonify({
             'success': True,

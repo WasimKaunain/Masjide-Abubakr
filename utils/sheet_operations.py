@@ -1,26 +1,14 @@
-import gspread
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from collections import Counter
 from datetime import datetime
-from app import get_db_connection, db_config
-from googleapiclient.discovery import build
-from dotenv import load_dotenv
-import os,json,base64,time
 import datetime
 
-load_dotenv()
 
-def get_common_month_year():
+def get_common_month_year(conn):
     """
     Finds the most frequent month and year from the Timestamp column.
     
     Returns:
         A tuple (year, month) representing the most common month-year combo.
     """
-    conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
@@ -55,7 +43,7 @@ def get_common_month_year():
 
 
 # Assumes get_db_connection() is available and returns a database connection.
-def archive_and_create_new_table(new_title):
+def archive_and_create_new_table(new_title,conn):
     """
     Renames the current 'transactions' table and creates a new one
     with the exact same schema using the LIKE keyword.
@@ -63,7 +51,6 @@ def archive_and_create_new_table(new_title):
     Args:
         new_title: The name to use for the archived table (e.g., transactions_2025_08).
     """
-    conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
