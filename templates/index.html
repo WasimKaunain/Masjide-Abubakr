@@ -786,13 +786,17 @@ table tfoot td {
   });
 
   // Load dropdown on page load
-window.onload = function() {
+document.addEventListener("DOMContentLoaded", () => {
+  const selector = document.getElementById("table-selector");
+  selector.innerHTML = "<option>Loading months...</option>";
+  
   fetch('/get_tables')
     .then(res => res.json())
     .then(tables => {
       populateDropdown(tables);
-    });
-};
+    })
+    .catch(err => console.error("Failed to fetch tables:", err));
+});
 
 function populateDropdown(tableNames) {
   const selector = document.getElementById("table-selector");
