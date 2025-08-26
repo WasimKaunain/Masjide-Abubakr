@@ -16,7 +16,7 @@ db_config = {
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
-    'port': os.getenv('DB_PORT')  # usually 3306
+    'port': os.getenv('DB_PORT')  
 }
 
 # Test connection

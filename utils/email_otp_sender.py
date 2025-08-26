@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import random, time
+import random, time, os
 
 OTP_STORE = {}  # Store OTP temporarily (email → otp + expiry)
 
@@ -15,8 +15,8 @@ def send_email_otp(to_email):
         'expires': time.time() + 300  # valid for 5 minutes
     }
 
-    sender_email = "wasimkonain@gmail.com"
-    app_password = "hfuk ycyn jsnv fqvf"
+    sender_email = os.getenv("DEVELOPER_EMAIL")
+    app_password = os.getenv("EMAIL_APP_PASSWORD")
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
