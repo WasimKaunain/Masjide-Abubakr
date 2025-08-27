@@ -4,7 +4,7 @@ import datetime
 
 def get_common_month_year(conn):
     """
-    Finds the most frequent month and year from the Timestamp column.
+    Finds the most frequent month and year from the Timestamp column (MySQL version).
     
     Returns:
         A tuple (year, month) representing the most common month-year combo.
@@ -12,13 +12,12 @@ def get_common_month_year(conn):
     cursor = conn.cursor()
     
     try:
-        # SQLite's strftime is used here. For other databases, the syntax may differ.
         cursor.execute(
             """
-            SELECT strftime('%Y', Timestamp), strftime('%m', Timestamp), COUNT(*) 
+            SELECT YEAR(Timestamp), MONTH(Timestamp), COUNT(*) 
             FROM transactions 
-            GROUP BY 1, 2 
-            ORDER BY 3 DESC 
+            GROUP BY YEAR(Timestamp), MONTH(Timestamp) 
+            ORDER BY COUNT(*) DESC 
             LIMIT 1
             """
         )
@@ -40,6 +39,7 @@ def get_common_month_year(conn):
         return now.year, now.month
     finally:
         cursor.close()
+
 
 
 # Assumes get_db_connection() is available and returns a database connection.
