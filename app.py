@@ -20,7 +20,7 @@ db_config = {
     'port': os.getenv('DB_PORT')  
 }
 
-connection_pool = pooling.MYSQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
+connection_pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
 
 # Test connection
 def get_db_connection():
