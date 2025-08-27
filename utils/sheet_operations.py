@@ -39,7 +39,7 @@ def get_common_month_year(conn):
         now = datetime.datetime.now()
         return now.year, now.month
     finally:
-        conn.close()
+        cursor.close()
 
 
 # Assumes get_db_connection() is available and returns a database connection.

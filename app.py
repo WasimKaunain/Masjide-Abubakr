@@ -20,7 +20,7 @@ db_config = {
     'port': os.getenv('DB_PORT')  
 }
 
-connection_pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
+connection_pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=10,pool_reset_session=True, **db_config)
 
 # Test connection
 def get_db_connection():
@@ -129,7 +129,8 @@ def submit_cash():
             VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
-        conn.commit()
+        if conn:
+            conn.commit()
 
         cursor.close()
         conn.close()
@@ -159,10 +160,13 @@ def salary_form():
 
 @app.route('/pay-salary', methods=['POST'])
 def pay_salary():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
 
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
         data = request.get_json()
         payer = data.get('payerName')
         amount = float(data.get('amount'))
@@ -181,7 +185,8 @@ def pay_salary():
             VALUES (%s, %s, %s, %s, %s)""",
             (payer, amount, 'Debit', 'Salary Paid', pay_date_str)
         )
-        conn.commit()
+        if conn:
+            conn.commit()
         print("Salary payment inserted successfully.")
         
         # Step 3: Calculate totals and remaining amount for the common month and year.
@@ -271,45 +276,71 @@ def get_previous_balance():
     
 @app.route('/get_tables')
 def get_tables():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SHOW TABLES LIKE 'transactions%'")
-    tables = [row[0] for row in cursor.fetchall()]
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()   # from your connection pool
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES LIKE 'transactions%'")
+        tables = [row[0] for row in cursor.fetchall()]
+        return jsonify(tables)
 
-    cursor.close()
-    conn.close()
-    return jsonify(tables)
+    except Exception as e:
+        print("Error in /get_tables:", e)
+        return jsonify({"error": "Failed to fetch tables"}), 500
 
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()  # returns it to the pool
 
 
 @app.route('/get_table_data/<table>')
 def get_table_data(table):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    conn = None
+    cursor = None
+    try:
+        # ✅ re-check table is valid
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES LIKE 'transactions%'")
+        valid_tables = [row[0] for row in cursor.fetchall()]
 
-    # Get transactions
-    cursor.execute(f"SELECT * FROM `{table}`")
-    rows = cursor.fetchall()
+        if table not in valid_tables:
+            return jsonify({"error": "Invalid table name"}), 400
 
-    cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Credit'")
-    row = cursor.fetchone()
-    total_credit = float(row["total"] or 0.0)
+        cursor.close()
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Debit'")
-    row = cursor.fetchone()
-    total_debit = float(row["total"] or 0.0)
+        cursor.execute(f"SELECT * FROM `{table}`")
+        rows = cursor.fetchall()
 
-    remaining = total_credit - total_debit
+        cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Credit'")
+        total_credit = float(cursor.fetchone()["total"] or 0.0)
 
-    cursor.close()
-    conn.close()
+        cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Debit'")
+        total_debit = float(cursor.fetchone()["total"] or 0.0)
 
-    return jsonify({
-        "rows": rows,
-        "total_credit": total_credit,
-        "total_debit": total_debit,
-        "remaining": remaining
-    })
+        remaining = total_credit - total_debit
+
+        return jsonify({
+            "rows": rows,
+            "total_credit": total_credit,
+            "total_debit": total_debit,
+            "remaining": remaining
+        })
+
+    except Exception as e:
+        print("Error in /get_table_data:", e)
+        return jsonify({"error": "Failed to fetch table data"}), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn and conn.is_connected():
+            conn.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=10000)
