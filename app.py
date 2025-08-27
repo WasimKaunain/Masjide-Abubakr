@@ -157,12 +157,6 @@ def salary_form():
     return render_template('salary-form.html')
 
 
-import datetime
-from flask import request, jsonify
-
-# Assumes you have get_db_connection(), get_common_month_year(),
-# and archive_and_create_new_table() functions defined.
-
 @app.route('/pay-salary', methods=['POST'])
 def pay_salary():
     conn = get_db_connection()
@@ -280,6 +274,8 @@ def get_tables():
     cursor = conn.cursor()
     cursor.execute("SHOW TABLES LIKE 'transactions%'")
     tables = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
     return jsonify(tables)
 
 

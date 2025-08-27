@@ -71,4 +71,4 @@ def archive_and_create_new_table(new_title,conn):
         conn.rollback() # Rollback on error
         print(f"❌ Error during table archiving: {e}")
     finally:
-        conn.close()
+        cursor.close()
