@@ -228,6 +228,7 @@ def pay_salary():
         return jsonify({'success': False, 'error': str(e)}), 500
     
     finally:
+        cursor.close()
         conn.close()
 
 @app.route('/get-transactions')
@@ -274,6 +275,7 @@ def get_tables():
     cursor = conn.cursor()
     cursor.execute("SHOW TABLES LIKE 'transactions%'")
     tables = [row[0] for row in cursor.fetchall()]
+
     cursor.close()
     conn.close()
     return jsonify(tables)
@@ -299,8 +301,8 @@ def get_table_data(table):
 
     remaining = total_credit - total_debit
 
-    conn.close()
     cursor.close()
+    conn.close()
 
     return jsonify({
         "rows": rows,
