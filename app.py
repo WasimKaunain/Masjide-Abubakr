@@ -4,6 +4,7 @@ from utils.sheet_operations import*
 import time, mysql.connector
 import os, datetime
 from dotenv import load_dotenv
+from mysql.connector import pooling
 
 
 app = Flask(__name__)
@@ -19,9 +20,11 @@ db_config = {
     'port': os.getenv('DB_PORT')  
 }
 
+connection_pool = pooling.MYSQLConnectionPool(pool_name="mypool", pool_size=5, **db_config)
+
 # Test connection
 def get_db_connection():
-    return mysql.connector.connect(**db_config)
+    return connection_pool.get_connection()
 
 @app.route("/")
 def index():
