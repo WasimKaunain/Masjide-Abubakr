@@ -660,7 +660,7 @@ table tfoot td {
   <!-- Default Transactions Table -->
       <table id="transaction-table">
         <thead>
-          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
+          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th></tr>
         </thead>
         <tbody></tbody>
         <tfoot>
@@ -673,7 +673,7 @@ table tfoot td {
   <!-- Monthly Transactions Table -->
       <table id="monthly-transaction-table" style="display:none;">
         <thead>
-          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th><th>Timestamp</th></tr>
+          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th></tr>
         </thead>
         <tbody id="monthly-body"></tbody>
         <tfoot>
@@ -681,6 +681,7 @@ table tfoot td {
           <tr><td colspan="2"><b>Total Credit Amounts</b></td><td colspan="3" id="total-credit">₹0</td></tr>
           <tr><td colspan="2"><b>Total Debit Amounts</b></td><td colspan="3" id="total-debit">₹0</td></tr>
           <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
+          <tr><td colspan="2"><b>Previous Balance</b></td><td colspan="3" id="prev-balance">₹0</td></tr>
         </tfoot>
       </table>
 
@@ -829,7 +830,7 @@ function populateDropdown(tableNames) {
 }
 
 
-function renderTable(rows, total_credit, total_debit, remaining) {
+function renderTable(rows, total_credit, total_debit, remaining,prev_balance) {
   // fill transaction rows
   let bodyHtml = rows.map(row => `
     <tr>
@@ -837,7 +838,6 @@ function renderTable(rows, total_credit, total_debit, remaining) {
       <td>₹${(Number(row.Amount) || 0).toFixed(2)}</td>
       <td>${row.Type}</td>
       <td>${row.Description}</td>
-      <td>${row.Timestamp}</td>
     </tr>
   `).join("");
 
@@ -847,6 +847,7 @@ function renderTable(rows, total_credit, total_debit, remaining) {
   document.getElementById("total-credit").innerText = "₹" + total_credit.toFixed(2);
   document.getElementById("total-debit").innerText = "₹" + total_debit.toFixed(2);
   document.getElementById("remaining-amount").innerText = "₹" + remaining.toFixed(2);
+  document.getElementById("prev-balance").innerText = "₹" + prev_balance.toFixed(2);
 }
 
 
@@ -882,7 +883,7 @@ function loadTableData()
       document.getElementById("table-header").innerText = `${monthName}, ${year}`;
 
       // Populate table
-      renderTable(data.rows, data.total_credit, data.total_debit, data.remaining);
+      renderTable(data.rows, data.total_credit, data.total_debit, data.remaining, data.prev_balance);
     })
     .catch(err => console.error("Error loading data:", err));
 }
@@ -925,7 +926,7 @@ fetch('/get-transactions')
     let total = 0;
     data.forEach(row => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${row.Name}</td><td>₹${row.Amount}</td><td>${row.Type}</td><td>${row.Description}</td><td>${row.Timestamp}</td>`;
+      tr.innerHTML = `<td>${row.Name}</td><td>₹${row.Amount}</td><td>${row.Type}</td><td>${row.Description}</td>`;
       tbody.appendChild(tr);
 
       const amount = parseFloat(row.Amount);

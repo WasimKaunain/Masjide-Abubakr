@@ -181,9 +181,9 @@ def pay_salary():
         # Step 2: Insert the new salary payment into the transactions table
         print("Inserting new salary payment...")
         cursor.execute(
-            """INSERT INTO transactions (Name, Amount, Type, Description, Timestamp) 
-            VALUES (%s, %s, %s, %s, %s)""",
-            (payer, amount, 'Debit', 'Salary Paid', pay_date_str)
+            """INSERT INTO transactions (Name, Amount, Type, Description) 
+            VALUES (%s, %s, %s, %s)""",
+            (payer, amount, 'Debit', 'Imam Sahab ka Wazeefa')
         )
         if conn:
             conn.commit()
@@ -242,7 +242,7 @@ def get_transactions():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)  # Return rows as dictionaries
 
-        cursor.execute("SELECT Name, Amount, Type, Description, Timestamp FROM transactions ORDER BY Timestamp DESC")
+        cursor.execute("SELECT Name, Amount, Type, Description FROM transactions ORDER BY Timestamp DESC")
         rows = cursor.fetchall()
 
         cursor.close()
@@ -313,7 +313,7 @@ def get_table_data(table):
         cursor.close()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute(f"SELECT * FROM `{table}`")
+        cursor.execute(f"SELECT Name,Amount,Type,Description FROM `{table}`")
         rows = cursor.fetchall()
 
         cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Credit'")
@@ -322,13 +322,18 @@ def get_table_data(table):
         cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Debit'")
         total_debit = float(cursor.fetchone()["total"] or 0.0)
 
+        cursor.execute("SELECT total_remaining_amount FROM monthly_report WHERE month_name = %s", (table,))
+        last_row = cursor.fetchone()
+        prev_balance = float(last_row["total_remaining_amount"]) if last_row else 0.0
+
         remaining = total_credit - total_debit
 
         return jsonify({
             "rows": rows,
             "total_credit": total_credit,
             "total_debit": total_debit,
-            "remaining": remaining
+            "remaining": remaining,
+            "prev_balance" : prev_balance
         })
 
     except Exception as e:
