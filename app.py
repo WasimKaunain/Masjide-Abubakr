@@ -41,11 +41,12 @@ def send_otp():
     data = request.get_json()
     email = data.get('email').lower()
     treasurer_email = os.getenv('TREASURER_EMAIL')
+    tester_email = os.getenv('TESTER_EMAIL')
 
     if not email:
         return jsonify({'message': 'Email is required'}), 400
     
-    if email != treasurer_email:
+    if email != treasurer_email or email != tester_email:
         return jsonify({'message': 'Unauthorized email'}), 403
 
     try:
@@ -183,8 +184,7 @@ def pay_salary():
         cursor.execute(
             """INSERT INTO transactions (Name, Amount, Type, Description) 
             VALUES (%s, %s, %s, %s)""",
-            (payer, amount, 'Debit', 'Imam Sahab ka Wazeefa')
-        )
+            (payer, amount, 'Debit', 'Imam Sahab ka Wazeefa'))
         if conn:
             conn.commit()
         print("Salary payment inserted successfully.")
