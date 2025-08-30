@@ -15,5 +15,6 @@
   "previous_balance": "पिछला शेष",
   "total_credit": "कुल जमा राशि",
   "total_debit": "कुल निकासी राशि",
-  "remaining_amount": "शेष राशि"
+  "remaining_amount": "शेष राशि",
+  "donation_goal": "दान लक्ष्य"
 }

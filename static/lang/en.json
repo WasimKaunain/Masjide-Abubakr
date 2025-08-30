@@ -15,5 +15,6 @@
   "previous_balance": "Previous Balance",
   "total_credit": "Total Credit Amounts",
   "total_debit": "Total Debit Amounts",
-  "remaining_amount": "Remaining Amount"
+  "remaining_amount": "Remaining Amount",
+  "donation_goal": "Donation Goal"
 }

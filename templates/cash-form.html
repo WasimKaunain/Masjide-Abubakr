@@ -246,10 +246,16 @@
 
     const result = await response.json();
 
-    if (response.ok && result.success) {
+    if (response.ok && result.success) 
+    {
       alert("Transaction submitted successfully.");
+      // ✅ refresh progress bar if the function exists
+      if (typeof updateProgressBar === "function") { updateProgressBar(); }
+
       window.location.href = '/treasurer-dashboard';
-    } else {
+    } 
+    else 
+    {
       alert("Error submitting the form.");
       resetSubmitButton();
     }
@@ -267,5 +273,6 @@
 }
 
       </script>
+      <script src="/static/progress.js"></script>
     </body>
   </html>

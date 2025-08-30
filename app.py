@@ -254,6 +254,29 @@ def get_transactions():
     except Exception as e:
         print(f"Error fetching transactions: {e}")
         return jsonify({'error': 'Failed to fetch transactions'}), 500
+    
+@app.route('/get-current-total')
+def get_current_total():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Credit'")
+        current = float(cursor.fetchone()["total"] or 0.0)
+        target = float(os.getenv("DONATION_TARGET", "0.0"))
+        # cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Debit'")
+        # total_debit = float(cursor.fetchone()["total"] or 0.0)
+
+
+        cursor.close()
+        conn.close()
+        return jsonify({
+            'current': current,
+            'target': target
+        })
+    except Exception as e:
+        print(f"Error fetching current totals: {e}")
+        return jsonify({'error': 'Failed to fetch totals'}), 500
 
 @app.route('/get-previous-balance')
 def get_previous_balance():
