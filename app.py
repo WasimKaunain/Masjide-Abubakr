@@ -39,14 +39,15 @@ def get_config():
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.get_json()
-    email = data.get('email').lower()
-    treasurer_email = os.getenv('TREASURER_EMAIL')
-    tester_email = os.getenv('TESTER_EMAIL')
+    email = data.get('email').strip().lower()
+
+    authorized_emails = os.getenv('TREASURER_EMAIL', "")
+    authorized_list = [e.strip().lower() for e in authorized_emails.split(",") if e.strip()]
 
     if not email:
         return jsonify({'message': 'Email is required'}), 400
     
-    if email != treasurer_email or email != tester_email:
+    if email not in authorized_list:
         return jsonify({'message': 'Unauthorized email'}), 403
 
     try:

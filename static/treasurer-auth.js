@@ -16,9 +16,11 @@ async function sendOTP() {
     });
 
     const contentType = response.headers.get("content-type");
-    const result = contentType && contentType.includes("application/json") ? await response.json() : { message: "Unexpected server response" };
+    const result = contentType && contentType.includes("application/json") 
+      ? await response.json() 
+      : { message: "Unexpected server response" };
 
-    alert(result.message);  // ✅ shows real message
+    alert(result.message);
 
     if (response.ok) {
       document.getElementById('otp-section').style.display = 'block';
@@ -26,8 +28,13 @@ async function sendOTP() {
   } catch (error) {
     console.error("Error sending OTP:", error);
     alert("Failed to send OTP. Please try again.");
+  } finally {
+    // ✅ Always executed (success or error)
+    spinner.style.display = "none";   // hide spinner
+    sendOtpButton.disabled = false;   // enable button again
   }
 }
+
 
 
 async function verifyOTP() {
