@@ -261,16 +261,6 @@ justify-content: center;
     width: 100%;
   }
 
-  .amount-buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .amount-buttons button {
-    width: 100%;
-    font-size: 1rem;
-  }
-
   .pay-btn {
     width: 100%;
     font-size: 1rem;
@@ -313,14 +303,6 @@ justify-content: center;
 }
 
 
-
-.amount-buttons button:hover {
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
 .input-card input:focus {
   border-color: #ffd700;
   box-shadow: 0 0 5px #ffd700a0;
@@ -353,11 +335,6 @@ justify-content: center;
   transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
-.amount-buttons button:hover {
-  max-height: 90%;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(255,255,255,0.2);
-}
 
 #lightbox-close {
   position: absolute;
@@ -525,44 +502,6 @@ table tfoot td {
   margin-bottom: 80px;
 }
 
-.content button {
-  padding: 10px 14px;
-  font-size: 20px;
-  font-weight: 600;
-  border: none;
-  background: linear-gradient(145deg, #007bff, #0056b3);
-  color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  margin: 10px;
-
-  /* 3D shadow and depth */
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.25),
-    inset 0 -2px 4px rgba(255, 255, 255, 0.1);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.3s ease,
-    background 0.4s ease;
-}
-
-.content button:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 8px 16px rgba(0, 0, 0, 0.3),
-    inset 0 -2px 4px rgba(255, 255, 255, 0.15);
-  background: linear-gradient(145deg, #0056b3, #003f7f);
-}
-
-.content button:active {
-  transform: translateY(1px);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    inset 0 2px 6px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(145deg, #003f7f, #002f6c);
-}
-
 .dropdown-container {
   width: 100%;               /* take full row */
   display: flex;
@@ -596,6 +535,70 @@ table tfoot td {
 
   #table-selector option {
     padding: 10px;
+  }
+
+.donation-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* space between input and button */
+    margin-top: 15px;
+  }
+
+  .donation-input-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: #fafafa;
+  }
+
+  .donation-input-container:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+    background: #fff;
+  }
+
+  .currency-symbol {
+    font-size: 18px;
+    color: #555;
+    font-weight: bold;
+  }
+
+  #donationAmount {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 6px;
+    background: transparent;
+    width: 120px;
+  }
+
+  #pay-now-btn {
+    padding: 12px 24px;
+    display: none; /* stays hidden until amount entered */
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #28a745, #218838);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  #pay-now-btn:hover {
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 128, 0, 0.5);
+  }
+
+  #donationAmount:focus {
+    outline: none;
   }
   </style>
 </head>
@@ -645,12 +648,11 @@ table tfoot td {
 </div>
 
 
-
 <div class="content" id="transactions" style="display: none;">
 
   <div class="dropdown-container">
     <select id="table-selector" onchange="loadTableData()">
-      <option value="">Select Month</option>
+      <option value="" data-i18n="select_month">Select Month</option>
     </select>
   </div>
 
@@ -658,61 +660,87 @@ table tfoot td {
   <h2 id="table-header" style="text-align:center; margin:10px 0; display:none;"></h2>
 
   <!-- Default Transactions Table -->
-      <table id="transaction-table">
-        <thead>
-          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th></tr>
-        </thead>
-        <tbody></tbody>
-        <tfoot>
-          <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
-          <tr><td colspan="2">Total Amount</td><td colspan="3" id="total-amount">₹0</td></tr>
-          <tr><td colspan="2">Previous Balance</td><td colspan="3" id="previous-balance">₹0</td></tr>
-        </tfoot>
-      </table>
+  <table id="transaction-table">
+    <thead>
+      <tr>
+        <th data-i18n="name">Name</th>
+        <th data-i18n="amount">Amount</th>
+        <th data-i18n="type">Type</th>
+        <th data-i18n="description">Description</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+      <tr>
+        <td colspan="2" data-i18n="total_amount">Total Amount</td>
+        <td colspan="3" id="total-amount">₹0</td>
+      </tr>
+      <tr>
+        <td colspan="2" data-i18n="previous_balance">Previous Balance</td>
+        <td colspan="3" id="previous-balance">₹0</td>
+      </tr>
+    </tfoot>
+  </table>
 
   <!-- Monthly Transactions Table -->
-      <table id="monthly-transaction-table" style="display:none;">
-        <thead>
-          <tr><th>Name</th><th>Amount</th><th>Type</th><th>Description</th></tr>
-        </thead>
-        <tbody id="monthly-body"></tbody>
-        <tfoot>
-          <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
-          <tr><td colspan="2"><b>Total Credit Amounts</b></td><td colspan="3" id="total-credit">₹0</td></tr>
-          <tr><td colspan="2"><b>Total Debit Amounts</b></td><td colspan="3" id="total-debit">₹0</td></tr>
-          <tr><td colspan="2"><b>Remaining Amount</b></td><td colspan="3" id="remaining-amount">₹0</td></tr>
-          <tr><td colspan="2"><b>Previous Balance</b></td><td colspan="3" id="prev-balance">₹0</td></tr>
-        </tfoot>
-      </table>
+  <table id="monthly-transaction-table" style="display:none;">
+    <thead>
+      <tr>
+        <th data-i18n="name">Name</th>
+        <th data-i18n="amount">Amount</th>
+        <th data-i18n="type">Type</th>
+        <th data-i18n="description">Description</th>
+      </tr>
+    </thead>
+    <tbody id="monthly-body"></tbody>
+    <tfoot>
+      <tr><td colspan="5" style="height: 20px;">&nbsp;</td></tr>
+      <tr>
+        <td colspan="2" data-i18n="total_credit">Total Credit Amounts</td>
+        <td colspan="3" id="total-credit">₹0</td>
+      </tr>
+      <tr>
+        <td colspan="2" data-i18n="total_debit">Total Debit Amounts</td>
+        <td colspan="3" id="total-debit">₹0</td>
+      </tr>
+      <tr>
+        <td colspan="2" data-i18n="remaining_amount">Remaining Amount</td>
+        <td colspan="3" id="remaining-amount">₹0</td>
+      </tr>
+      <tr>
+        <td colspan="2" data-i18n="previous_balance">Previous Balance</td>
+        <td colspan="3" id="prev-balance">₹0</td>
+      </tr>
+    </tfoot>
+  </table>
 
 </div>
 
 
-<div class="content" id="donate" style="display: none;">
-  <h2 data-i18n="select_donation_amount">Select Donation Amount</h2>
-  <div style="display: flex; gap: 6px; margin-bottom: 15px;padding-left: 4px;padding-right: 4px;">
-    <button onclick="selectAmount(200)">₹200</button>
-    <button onclick="selectAmount(300)">₹300</button>
-    <button onclick="selectAmount(500)">₹500</button>
-  </div>
-
-  <button 
-    onclick="goToPayment()" 
-    id="pay-now-btn" data-i18n="pay_now"
-    style="padding: 12px 24px;
-            display: none;
-           font-size: 16px;
-           font-weight: bold;
-           color: white;
-           background: linear-gradient(135deg, #28a745, #218838);
-           border: none;
-           border-radius: 10px;
-           box-shadow: 0 6px 15px rgba(0, 128, 0, 0.4);
-           cursor: pointer;
-           transition: all 0.3s ease;">
-    Pay Now
-  </button>
+<div class="content" id="donate" style="display: none; text-align: center;">
+  <h2 data-i18n="enter_donation_amount">Enter Donation Amount</h2>
   
+  <div class="donation-wrapper">
+    <div class="donation-input-container">
+      <span class="currency-symbol">₹</span>
+      <input 
+        type="number" 
+        id="donationAmount" 
+        placeholder="Enter amount" 
+        min="1" 
+        oninput="togglePayButton()"
+      >
+    </div>
+
+    <button 
+      onclick="goToPayment()" 
+      id="pay-now-btn" 
+      data-i18n="pay_now">
+      Pay Now
+    </button>
+  </div>
+</div>
 
     <script>
       const btn = document.getElementById('pay-now-btn');
@@ -758,6 +786,29 @@ table tfoot td {
 
 
 <script>
+
+  function setTableHeader(monthIndex, year, langData) 
+  {
+      const header = document.getElementById("table-header");
+      
+      if (monthIndex === "current") {
+        header.innerText = langData["current_month"];
+      } else {
+        // monthIndex is 0–11 (JS months)
+        const monthNames = [
+          langData["january"], langData["february"], langData["march"],
+          langData["april"], langData["may"], langData["june"],
+          langData["july"], langData["august"], langData["september"],
+          langData["october"], langData["november"], langData["december"]
+        ];
+      
+        header.innerText = `${monthNames[monthIndex]} ${year}`;
+      }
+    
+      header.style.display = "block";
+  }
+
+
   async function setLanguage(lang) {
     const res = await fetch(`/static/lang/${lang}.json`);
     const translations = await res.json();
@@ -879,7 +930,6 @@ function loadTableData()
       const month = parts[2];
       const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
 
-      // Set header
       document.getElementById("table-header").innerText = `${monthName}, ${year}`;
 
       // Populate table
@@ -922,6 +972,9 @@ fetch('/get-transactions')
   .then(res => res.json())
   .then(data => {
     const tbody = document.querySelector('#transaction-table tbody');
+    document.getElementById("table-header").style.display = "block";
+    document.getElementById("table-header").innerText = "Current Month";
+    
     tbody.innerHTML = '';
     let total = 0;
     data.forEach(row => {
@@ -951,13 +1004,6 @@ fetch('/get-transactions')
 
   }
 }
-
-
-function selectAmount(amount) 
-  {
-    selectedAmount = amount;
-    document.getElementById("pay-now-btn").style.display = "inline-block";
-  }
 
 </script>
 
