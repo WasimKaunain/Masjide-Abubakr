@@ -623,6 +623,7 @@ table tfoot td {
     <select class="lang" id="language-selector">
       <option value="en">English</option>
       <option value="hi">हिन्दी</option>
+      <option value="ur">اردو</option>
     </select>
   </div>
 </div>
@@ -776,7 +777,7 @@ table tfoot td {
       </a>
       </div>
     <!-- Third line: Developer credit, on separate line -->
-    <a href="https://www.github.com/WasimKaunain.com" target="_blank" style="text-decoration: none;">
+    <a href="https://github.com/WasimKaunain/masjide-abubakr" target="_blank" style="text-decoration: none;">
       <div style="margin-top: 10px; font-size: 10px;">👨‍💻 Developed by Wasim Konain</div>
     </a>
 
@@ -786,27 +787,6 @@ table tfoot td {
 
 
 <script>
-
-  function setTableHeader(monthIndex, year, langData) 
-  {
-      const header = document.getElementById("table-header");
-      
-      if (monthIndex === "current") {
-        header.innerText = langData["current_month"];
-      } else {
-        // monthIndex is 0–11 (JS months)
-        const monthNames = [
-          langData["january"], langData["february"], langData["march"],
-          langData["april"], langData["may"], langData["june"],
-          langData["july"], langData["august"], langData["september"],
-          langData["october"], langData["november"], langData["december"]
-        ];
-      
-        header.innerText = `${monthNames[monthIndex]} ${year}`;
-      }
-    
-      header.style.display = "block";
-  }
 
 
   async function setLanguage(lang) {
