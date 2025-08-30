@@ -1,4 +1,5 @@
-async function updateProgressBar() {
+async function updateProgressBar() 
+{
   try {
     // Backend will return { current: 25000, target: 50000 }
     const res = await fetch('/get-current-total');
