@@ -62,6 +62,10 @@ body {
 
 /* ✅ Language selector at right */
 .language-wrapper {
+  display: flex;
+  gap: 50px;
+  align-items: center;
+  flex-direction: column;
   position: absolute;
   top: 60px;
   right: 40px;
@@ -76,6 +80,26 @@ body {
   color: #000;
   border: 1px solid #ccc;
   cursor: pointer;
+}
+
+.donor-btn {
+  margin-top: 10px;             /* spacing below logo */
+  padding: 8px 16px;
+  background-color: #ffd700;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s;
+  text-align: center;    
+}
+
+.donor-btn:hover {
+  background: #343a40;
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
 }
 
 .pay-content {
@@ -665,6 +689,7 @@ table tfoot td {
       <option value="hi">हिन्दी</option>
       <option value="ur">اردو</option>
     </select>
+    <a href="{{ url_for('donor_list') }}" class="donor-btn">📜 Donor List</a>
   </div>
 </div>
 

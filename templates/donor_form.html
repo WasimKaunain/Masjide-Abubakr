@@ -1,0 +1,248 @@
+<!-- donor-form.html -->
+<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Add Donor Form</title>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+      <style>
+        body {
+          font-family: 'Poppins', sans-serif;
+          background: linear-gradient(to right, #4facfe, #00f2fe);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          margin: 0;
+          }
+            
+        .donor-form {
+          width: 350px;
+          margin: 40px auto;
+          padding: 20px;
+          background-color: #f9f9f9;
+          border-radius: 10px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          font-family: Arial, sans-serif;
+        }
+      
+        .donor-form h2 {
+          text-align: center;
+          margin-bottom: 20px;
+          color: #333;
+        }
+      
+        .form-group {
+          margin-bottom: 15px;
+          display: flex;
+          flex-direction: column;
+        }
+      
+        .form-group label {
+          margin-bottom: 6px;
+          font-weight: bold;
+          color: #444;
+        }
+      
+        .form-group input,
+        .form-group select {
+          padding: 8px 10px;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+          font-size: 15px;
+        }
+      
+        .form-group input:focus,
+        .form-group select:focus {
+          border-color: #5c9ded;
+          outline: none;
+        }
+      
+        .donor-form button {
+          position: relative;
+          background: linear-gradient(135deg, #4facfe, #00f2fe);
+          color: white;
+          border: none;
+          border-radius: 50px;
+          padding: 18px 50px;
+          font-size: 1rem;
+          margin-top: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          transition: all 0.3s ease;
+        }
+      
+        /* Hover effect */
+        .donor-form button:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+          background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        /* Active/pressed effect */
+        .donor-form button:active {
+          transform: translateY(0);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Spinner Styling */
+        #spinner {
+          display: none; /* default hidden */
+          font-size: 1.2rem;
+          animation: spin 1s linear infinite;
+        }
+
+        /* Show spinner when button is loading */
+        .donor-form button.loading #spinner {
+          display: inline-block;
+        }
+
+        /* Spinner animation */
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(58, 3, 3, 0.2);
+        transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+        background-color: #1b5e20;
+        }
+      </style>
+    </head>
+    <body>
+      <button onclick="goBack()" class="back-button">← Back to Treasurer Dashboard</button>
+      
+    <div class="donor-form">
+    <h2>New Donor Entry</h2>
+
+    <div class="form-group">
+      <label for="transaction-type">Transaction Type</label>
+      <select id="transaction-type" onchange="handleTypeChange()">
+        <option value="Add" selected>Add</option>
+        <option value="Remove">Remove</option>
+      </select>
+    </div>
+    
+      <!-- Name Field (Credit only) -->
+      <div class="form-group" id="name-field">
+        <label for="donor-name">Donor Name</label>
+        <input type="text" id="donor-name" placeholder="Enter donor name">
+      </div>
+    
+      <!-- Amount Field (Always visible) -->
+      <div class="form-group">
+        <label for="donation-amount">Fixed Amount</label>
+        <input type="number" id="donation-amount" placeholder="Enter amount">
+      </div>
+    
+      <button id="submit-button" onclick="addDonorForm()">
+        Submit
+        <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+      </button>
+    </div>
+
+
+
+
+<script>
+    function goBack() { window.location.href = '/treasurer-dashboard';} 
+
+    function handleTypeChange() 
+    {
+      const type = document.getElementById("transaction-type").value;
+      const nameField = document.getElementById("name-field");
+      const amountField = document.getElementById("donation-amount");
+      const amountLabel = document.querySelector("label[for='donation-amount']");
+
+    if (type === "Remove") 
+        {   nameField.style.display = "block";
+            amountField.style.display = "none"; 
+            amountLabel.style.display = "none";    
+        } 
+    else 
+        {   nameField.style.display = "block";
+            amountField.style.display = "block"; }
+    }
+
+    async function addDonorForm() {
+    const submitBtn = document.getElementById("submit-button");
+    const spinner = document.getElementById("spinner");
+
+    // Disable button and show spinner
+    submitBtn.disabled = true;
+    spinner.style.display = "inline-block";
+
+    const amount = document.getElementById("donation-amount").value;
+    const type = document.getElementById("transaction-type").value;
+
+    if (!amount) {
+      alert("Please enter the amount.");
+      resetSubmitButton();
+      return;
+    }
+
+    const donorName = document.getElementById("donor-name").value;
+
+    if (!donorName) 
+      {
+        alert("Please enter the donor name.");
+        resetSubmitButton();
+        return;
+      }
+
+    let payload = { type : type, amount: amount, donor_name: donorName};
+
+
+    try {
+      const response = await fetch('/add-donor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) 
+      {
+        alert("Donor Added successfully.");
+        window.location.href = '/treasurer-dashboard';
+      } 
+      else 
+      {
+        alert("Error submitting the form.");
+        resetSubmitButton();
+      }
+
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Something went wrong. Please try again.");
+      resetSubmitButton();
+    }
+
+    function resetSubmitButton() {
+      submitBtn.disabled = false;
+      spinner.style.display = "none";
+    }
+        }   
+
+</script>
+    </body>
+  </html>

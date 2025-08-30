@@ -143,10 +143,13 @@
         </div>
       
         <!-- Name Field (Credit only) -->
+        <!-- Name Field (Credit only) -->
         <div class="form-group" id="name-field">
           <label for="donor-name">Name</label>
-          <input type="text" id="donor-name" placeholder="Enter donor name">
+          <input type="text" id="donor-name" list="donor-suggestions" placeholder="Enter donor name">
+          <datalist id="donor-suggestions"></datalist>
         </div>
+
       
         <!-- Amount Field (Always visible) -->
         <div class="form-group">
@@ -169,25 +172,43 @@
 
 
 
+  <script>
+    async function loadDonorNames() {
+      try {
+        const response = await fetch("/get-donor-names");
+        const donorNames = await response.json();
 
-      <script>
-      function goBack() {
-        window.location.href = '/treasurer-dashboard';
-      } 
+        const datalist = document.getElementById("donor-suggestions");
+        datalist.innerHTML = ""; // Clear old options
 
-        function handleTypeChange() {
-          const type = document.getElementById("transaction-type").value;
-          const nameField = document.getElementById("name-field");
-          const descriptionField = document.getElementById("description-field");
+        donorNames.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          datalist.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error loading donor names:", error);
+      }
+    }
 
-          if (type === "Credit") {
-            nameField.style.display = "flex";
-            descriptionField.style.display = "none";
-          } else {
-            nameField.style.display = "none";
-            descriptionField.style.display = "flex";
-          }
-          }
+    // Load donor names when page loads
+    window.onload = loadDonorNames;
+  
+  function goBack() {
+    window.location.href = '/treasurer-dashboard';
+  }
+    function handleTypeChange() {
+      const type = document.getElementById("transaction-type").value;
+      const nameField = document.getElementById("name-field");
+      const descriptionField = document.getElementById("description-field")
+      if (type === "Credit") {
+        nameField.style.display = "flex";
+        descriptionField.style.display = "none";
+      } else {
+        nameField.style.display = "none";
+        descriptionField.style.display = "flex";
+      }
+      }
 
   async function submitCashForm() {
   const submitBtn = document.getElementById("submit-button");

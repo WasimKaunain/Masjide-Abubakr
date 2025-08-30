@@ -62,9 +62,63 @@ def send_otp():
 def cash_form():
     return render_template('cash-form.html')
 
+@app.route('/donor-form')
+def donor_form():
+    return render_template('donor_form.html')
+
+@app.route('/add-donor', methods=['POST'])
+def add_donor():
+    data = request.get_json()
+    donor_name = data.get('donor_name')
+    amount = data.get('amount')
+    type = data.get('type')  # "Add" or "Remove"
+
+    if not donor_name or not amount:
+        return jsonify({'success': False, 'message': 'Missing donor name or amount'}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()  
+
+        if type == "Add":
+            query = """INSERT INTO donor_list (name, amount) VALUES (%s, %s)"""
+        else:
+            query = """DELETE FROM donor_list WHERE name = %s LIMIT 1"""
+            amount = None
+        
+        cursor.execute(query, (donor_name, amount))
+        if conn:
+            conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True})
+
+    except mysql.connector.Error as err:
+        return jsonify({'success': False, 'message': str(err)}), 500
+
 @app.route('/treasurer-form')
 def treasurer_form():
     return render_template('treasurer-form.html')
+
+@app.route('/donor-list')
+def donor_list():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)  # Return rows as dictionaries
+
+        cursor.execute("SELECT name, amount, paid_or_not FROM donor_list ORDER BY name ASC")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('donor-list.html', donors=rows)
+
+    except Exception as e:
+        print(f"Error fetching donor list: {e}")
+        return jsonify({'error': 'Failed to fetch donor list'}), 500
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -95,24 +149,46 @@ def verify_otp():
     else:
         return jsonify({"message": "Invalid OTP"}), 400
     
+    
+@app.route('/get-donor-names')
+def get_donor_names():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT name FROM donor_list ORDER BY name ASC")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        # Extract only names into a list
+        donor_names = [row['name'] for row in rows]
+
+        return jsonify(donor_names)
+
+    except Exception as e:
+        print(f"Error fetching donor names: {e}")
+        return jsonify([])
+
+    
 @app.route('/submit-cash', methods=['POST'])
 def submit_cash():
     data = request.get_json()
-    txn_type = data.get('type')  # "Credit" or "Debit"
+    txn_type = data.get('type')
     amount = data.get('amount')
     timestamp = datetime.datetime.now()
 
-    # Validate common fields
     if not (txn_type and amount):
         return jsonify({'success': False, 'message': 'Missing transaction type or amount'}), 400
 
-    # Prepare data based on transaction type
+    donor_name, description = None, None
+
     if txn_type == "Credit":
         donor_name = data.get('donor_name')
         if not donor_name:
             return jsonify({'success': False, 'message': 'Missing donor name'}), 400
         description = "Donation"
-        # row = [donor_name, amount, "Credit", "Donation", timestamp]
 
     elif txn_type == "Debit":
         description = data.get('description')
@@ -124,23 +200,30 @@ def submit_cash():
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()  
+        cursor = conn.cursor()
 
         query = """
             INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
             VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
-        if conn:
-            conn.commit()
 
+        if txn_type == "Credit":
+            query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
+            cursor.execute(query, (donor_name,))
+
+        conn.commit()
         cursor.close()
         conn.close()
 
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'Transaction saved successfully!'})
 
-    except mysql.connector.Error as err:
-        return jsonify({'success': False, 'message': str(err)}), 500
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error inserting transaction: {e}")
+        return jsonify({'success': False, 'message': 'Database error occurred'}), 500
+
 
 
 @app.route('/treasurer-section')
@@ -263,10 +346,9 @@ def get_current_total():
 
         cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Credit'")
         current = float(cursor.fetchone()["total"] or 0.0)
-        target = float(os.getenv("DONATION_TARGET", "0.0"))
-        # cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Debit'")
-        # total_debit = float(cursor.fetchone()["total"] or 0.0)
-
+        
+        cursor.execute("SELECT SUM(amount) as total FROM donor_list")
+        target = float(cursor.fetchone()["total"] or 0.0)
 
         cursor.close()
         conn.close()
