@@ -130,34 +130,36 @@
     <body>
       <button onclick="goBack()" class="back-button">← Back to Treasurer Dashboard</button>
       
-    <div class="donor-form">
-    <h2>New Donor Entry</h2>
+<div class="donor-form">
+  <h2>New Donor Entry</h2>
 
-    <div class="form-group">
-      <label for="transaction-type">Transaction Type</label>
-      <select id="transaction-type" onchange="handleTypeChange()">
-        <option value="Add" selected>Add</option>
-        <option value="Remove">Remove</option>
-      </select>
-    </div>
-    
-      <!-- Name Field (Credit only) -->
-      <div class="form-group" id="name-field">
-        <label for="donor-name">Donor Name</label>
-        <input type="text" id="donor-name" placeholder="Enter donor name">
-      </div>
-    
-      <!-- Amount Field (Always visible) -->
-      <div class="form-group">
-        <label for="donation-amount">Fixed Amount</label>
-        <input type="number" id="donation-amount" placeholder="Enter amount">
-      </div>
-    
-      <button id="submit-button" onclick="addDonorForm()">
-        Submit
-        <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
-      </button>
-    </div>
+  <div class="form-group">
+    <label for="transaction-type">Transaction Type</label>
+    <select id="transaction-type" onchange="handleTypeChange()">
+      <option value="Add" selected>Add</option>
+      <option value="Remove">Remove</option>
+    </select>
+  </div>
+  
+  <!-- Name Field -->
+  <div class="form-group" id="name-field">
+    <label for="donor-name">Donor Name</label>
+    <input type="text" id="donor-name" placeholder="Enter donor name">
+    <datalist id="donor-suggestions"></datalist>
+  </div>
+
+  <!-- Amount Field (Always visible except on Remove) -->
+  <div class="form-group" id="amount-field">
+    <label for="donation-amount">Fixed Amount</label>
+    <input type="number" id="donation-amount" placeholder="Enter amount">
+  </div>
+
+  <button id="submit-button" onclick="addDonorForm()">
+    Submit
+    <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+  </button>
+</div>
+
 
 
 
@@ -165,21 +167,47 @@
 <script>
     function goBack() { window.location.href = '/treasurer-dashboard';} 
 
-    function handleTypeChange() 
-    {
-      const type = document.getElementById("transaction-type").value;
-      const nameField = document.getElementById("name-field");
-      const amountField = document.getElementById("donation-amount");
-      const amountLabel = document.querySelector("label[for='donation-amount']");
+function handleTypeChange() {
+  const type = document.getElementById("transaction-type").value;
+  const nameFieldWrapper = document.getElementById("name-field");
+  const amountFieldWrapper = document.getElementById("amount-field");
+  const donorNameInput = document.getElementById("donor-name");
 
-    if (type === "Remove") 
-        {   nameField.style.display = "block";
-            amountField.style.display = "none"; 
-            amountLabel.style.display = "none";    
-        } 
-    else 
-        {   nameField.style.display = "block";
-            amountField.style.display = "block"; }
+  if (type === "Remove") {
+    // Switch to datalist
+    donorNameInput.setAttribute("list", "donor-suggestions");
+
+    // Load donor names dynamically
+    loadDonorNames();
+
+    // Hide amount field
+    amountFieldWrapper.style.display = "none";
+  } else {
+    // Switch back to plain text input
+    donorNameInput.removeAttribute("list");
+
+    // Show amount field
+    amountFieldWrapper.style.display = "block";
+  }
+}
+
+    async function loadDonorNames() 
+    {
+      try {
+        const response = await fetch("/get-donor-names");
+        const donorNames = await response.json();
+      
+        const datalist = document.getElementById("donor-suggestions");
+        datalist.innerHTML = ""; // Clear old options
+      
+        donorNames.forEach(name => {
+          const option = document.createElement("option");
+          option.value = name;
+          datalist.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error loading donor names:", error);
+      }
     }
 
     async function addDonorForm() {
@@ -193,7 +221,7 @@
     const amount = document.getElementById("donation-amount").value;
     const type = document.getElementById("transaction-type").value;
 
-    if (!amount) {
+    if (type == "Add" && !amount) {
       alert("Please enter the amount.");
       resetSubmitButton();
       return;
