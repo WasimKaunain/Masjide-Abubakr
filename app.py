@@ -122,6 +122,15 @@ def donor_list():
         print(f"Error fetching donor list: {e}")
         return jsonify({'error': 'Failed to fetch donor list'}), 500
 
+
+@app.route('/set-language', methods=['POST'])
+def set_language():
+    data = request.get_json()
+    lang = data.get('language', 'en')
+    session['lang'] = lang  # store in server-side session
+    return jsonify(success=True)
+
+
 @app.route('/logout', methods=['POST'])
 def logout():
     # Clear the treasurer's session

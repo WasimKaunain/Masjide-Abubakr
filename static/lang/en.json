@@ -44,5 +44,10 @@
   "welcome-msg": "Welcome to Treasurer Section!",
   "salary-payment": "Salary Payment",
   "create-transaction": "Create Transaction",
-  "add-remove": "Add/Remove Donor"
+  "add-remove": "Add/Remove Donor",
+  "DonorName": "Donor Name",
+  "Amount": "Amount",
+  "Status": "Status",
+  "NoDonorsFound": "No donors found"
+
 }

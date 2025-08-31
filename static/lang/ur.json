@@ -44,5 +44,11 @@
   "welcome-msg": "خزانچی سیکشن میں خوش آمدید!",
   "salary-payment": "تنخواہ کی ادائیگی",
   "create-transaction": "لین دین بنائیں",
-  "add-remove": "عطیہ دہندہ شامل/ہٹائیں"
+  "add-remove": "عطیہ دہندہ شامل/ہٹائیں",
+  "DonorName": "ڈونر کا نام",
+  "Amount": "رقم",
+  "Status": "حیثیت",
+  "NoDonorsFound": "کوئی ڈونر نہیں ملا"
 }
+
+

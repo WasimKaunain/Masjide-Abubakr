@@ -44,5 +44,9 @@
   "welcome-msg": "खजांची अनुभाग में आपका स्वागत है!",
   "salary-payment": "वेतन भुगतान",
   "create-transaction": "लेन-देन बनाएँ",
-  "add-remove": "दाता जोड़ें/हटाएं"
+  "add-remove": "दाता जोड़ें/हटाएं",
+  "DonorName": "दानकर्ता का नाम",
+  "Amount": "राशि",
+  "Status": "स्थिति",
+  "NoDonorsFound": "कोई दानकर्ता नहीं मिला"
 }
