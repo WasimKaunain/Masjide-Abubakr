@@ -225,12 +225,13 @@ def submit_cash():
             query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
             cursor.execute(query, (donor_name,))
 
-        # ✅ Commit after all queries succeed
         conn.commit()
+        return jsonify({'success': True, 'message': 'Transaction saved successfully'}), 200
 
     except Exception as e:
-        conn.rollback()   # ❌ Rollback if anything fails
+        conn.rollback()
         print("Error:", e)
+        return jsonify({'success': False, 'message': 'Database error'}), 500
 
     finally:
         cursor.close()
