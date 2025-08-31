@@ -66,15 +66,17 @@ def cash_form():
 def donor_form():
     return render_template('donor_form.html')
 
-@app.route('/add-donor', methods=['POST'])
-def add_donor():
+@app.route('/edit-donor', methods=['POST'])
+def edit_donor():
     data = request.get_json()
     donor_name = data.get('donor_name')
-    amount = data.get('amount')
     type = data.get('type')  # "Add" or "Remove"
 
-    if not donor_name or not amount:
-        return jsonify({'success': False, 'message': 'Missing donor name or amount'}), 400
+    if type == "Add":
+        amount = data.get('amount')
+
+    if not donor_name :
+        return jsonify({'success': False, 'message': 'Missing donor name'}), 400
 
     try:
         conn = get_db_connection()
@@ -82,11 +84,11 @@ def add_donor():
 
         if type == "Add":
             query = """INSERT INTO donor_list (name, amount) VALUES (%s, %s)"""
+            cursor.execute(query, (donor_name, amount))
         else:
             query = """DELETE FROM donor_list WHERE name = %s LIMIT 1"""
-            amount = None
+            cursor.execute(query, (donor_name,))
         
-        cursor.execute(query, (donor_name, amount))
         if conn:
             conn.commit()
 

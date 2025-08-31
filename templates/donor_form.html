@@ -154,7 +154,7 @@
     <input type="number" id="donation-amount" placeholder="Enter amount">
   </div>
 
-  <button id="submit-button" onclick="addDonorForm()">
+  <button id="submit-button" onclick="editDonorForm()">
     Submit
     <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
   </button>
@@ -210,7 +210,7 @@ function handleTypeChange() {
       }
     }
 
-    async function addDonorForm() {
+    async function editDonorForm() {
     const submitBtn = document.getElementById("submit-button");
     const spinner = document.getElementById("spinner");
 
@@ -218,13 +218,18 @@ function handleTypeChange() {
     submitBtn.disabled = true;
     spinner.style.display = "inline-block";
 
-    const amount = document.getElementById("donation-amount").value;
     const type = document.getElementById("transaction-type").value;
+    const amount = null
 
-    if (type == "Add" && !amount) {
-      alert("Please enter the amount.");
-      resetSubmitButton();
-      return;
+    if (type == "Add" ) 
+    {
+      const amount = document.getElementById("donation-amount").value;
+      if (!amount) 
+      {
+         alert("Please enter the amount.");
+         resetSubmitButton();
+         return;
+      }
     }
 
     const donorName = document.getElementById("donor-name").value;
@@ -240,7 +245,7 @@ function handleTypeChange() {
 
 
     try {
-      const response = await fetch('/add-donor', {
+      const response = await fetch('/edit-donor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -250,7 +255,9 @@ function handleTypeChange() {
 
       if (response.ok && result.success) 
       {
-        alert("Donor Added successfully.");
+        if (type == "Add") {alert("Donor Added successfully.");}
+        else {alert("Donor Removed successfully.");} 
+        
         window.location.href = '/treasurer-dashboard';
       } 
       else 

@@ -148,30 +148,30 @@
 <body>
 
   <div class="top-bar">
-    <h2>Treasurer Section</h2>
+    <h2 data-i18n="treasurer-section-header">Treasurer Section</h2>
     <form action="{{ url_for('logout') }}" method="POST">
       <button class="btn-logout" type="submit">Logout</button>
     </form>
   </div>
 
   <div class="welcome-section">
-    <h1>Welcome to Treasurer Section!</h1>
+    <h1 data-i18n="welcome-msg">Welcome to Treasurer Section!</h1>
     <div class="treasurer-name">Mr. {{ treasurer_name }}</div>
 
     <div class="buttons">
       <a href="{{ url_for('salary_form') }}" class="fancy-btn">
         <div class="icon">💰</div>
-        <div class="label">Salary Payment</div>
+        <div class="label" data-i18n="salary-payment">Salary Payment</div>
       </a>
 
       <a href="{{ url_for('cash_form') }}" class="fancy-btn">
         <div class="icon">📥</div>
-        <div class="label">Create Transaction</div>
+        <div class="label" data-i18n="create-transaction">Create Transaction</div>
       </a>
 
       <a href="{{ url_for('donor_form') }}" class="fancy-btn">
         <div class="icon">👥</div>
-        <div class="label">Add/Remove Donor</div>
+        <div class="label" data-i18n="add-remove">Add/Remove Donor</div>
       </a>
     </div>
   </div>
