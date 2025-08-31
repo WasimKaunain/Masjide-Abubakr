@@ -114,7 +114,7 @@ def donor_list():
         cursor.close()
         conn.close()
 
-        return render_template('donor-list.html', donors=rows)
+        return render_template('donor-list.html', donors=rows, total =len(rows))
 
     except Exception as e:
         print(f"Error fetching donor list: {e}")
@@ -198,32 +198,32 @@ def submit_cash():
     else:
         return jsonify({'success': False, 'message': 'Invalid transaction type'}), 400
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
+    try:
+        # 1️⃣ Insert transaction
         query = """
             INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
             VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
 
+        # 2️⃣ Only update donor_list if first query succeeded
         if txn_type == "Credit":
             query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
             cursor.execute(query, (donor_name,))
 
+        # ✅ Commit after all queries succeed
         conn.commit()
-        cursor.close()
-        conn.close()
-
-        return jsonify({'success': True, 'message': 'Transaction saved successfully!'})
 
     except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Error inserting transaction: {e}")
-        return jsonify({'success': False, 'message': 'Database error occurred'}), 500
+        conn.rollback()   # ❌ Rollback if anything fails
+        print("Error:", e)
 
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @app.route('/treasurer-section')

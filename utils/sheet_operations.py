@@ -63,9 +63,13 @@ def archive_and_create_new_table(new_title,conn):
         # using the schema of the newly archived table.
         print("Creating a new 'transactions' table with the same schema...")
         cursor.execute(f"CREATE TABLE transactions LIKE {new_title}")
+
+        # Step 3: Reset donor_list status
+        print("Resetting all donor_list.paid_or_not values to False...")
+        cursor.execute("UPDATE donor_list SET paid_or_not = FALSE")
         
         conn.commit()
-        print("✅ Tables archived and new table created successfully.")
+        print("✅ Tables archived and new table created successfully and donor list resetted successfully.")
     
     except Exception as e:
         conn.rollback() # Rollback on error
