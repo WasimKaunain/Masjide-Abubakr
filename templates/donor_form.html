@@ -38,22 +38,6 @@
                       -15px -15px 40px rgba(255, 255, 255, 0.9);
         }
         
-        /* Optional: Add glowing border on hover */
-        .donor-form:hover::before {
-          content: "";
-          position: absolute;
-          inset: -5px;
-          border-radius: 22px;
-          background: linear-gradient(135deg, #6a11cb, #2575fc);
-          z-index: -1;
-          filter: blur(20px);
-          opacity: 0.5;
-          transition: opacity 0.3s ease;
-        }
-        
-        .donor-form:hover::before {
-          opacity: 1;
-}
       
         .donor-form h2 {
           text-align: center;
@@ -248,11 +232,11 @@ function handleTypeChange() {
     spinner.style.display = "inline-block";
 
     const type = document.getElementById("transaction-type").value;
-    const amount = null
+    let amount = null
 
     if (type == "Add" ) 
     {
-      const amount = document.getElementById("donation-amount").value;
+      amount = document.getElementById("donation-amount").value;
       if (!amount) 
       {
          alert("Please enter the amount.");

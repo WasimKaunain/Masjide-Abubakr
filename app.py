@@ -110,13 +110,23 @@ def donor_list():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)  # Return rows as dictionaries
 
+        # Fetch all donors
         cursor.execute("SELECT name, amount, paid_or_not FROM donor_list ORDER BY name ASC")
         rows = cursor.fetchall()
+
+        # Fetch unpaid donor count
+        cursor.execute("SELECT COUNT(*) AS unpaid_count FROM donor_list WHERE paid_or_not = 0")
+        unpaid_count = cursor.fetchone()["unpaid_count"]
 
         cursor.close()
         conn.close()
 
-        return render_template('donor-list.html', donors=rows, total =len(rows))
+        return render_template(
+            'donor-list.html',
+            donors=rows,
+            total=len(rows),
+            unpaid_count=unpaid_count
+        )
 
     except Exception as e:
         print(f"Error fetching donor list: {e}")
@@ -191,51 +201,57 @@ def submit_cash():
     timestamp = datetime.datetime.now()
 
     if not (txn_type and amount):
-        return jsonify({'success': False, 'message': 'Missing transaction type or amount'}), 400
+        return jsonify({'success': False, 'message': 'Missing transaction type or amount', 'user_error': True}), 400
 
     donor_name, description = None, None
 
     if txn_type == "Credit":
         donor_name = data.get('donor_name')
         if not donor_name:
-            return jsonify({'success': False, 'message': 'Missing donor name'}), 400
+            return jsonify({'success': False, 'message': 'Missing donor name', 'user_error': True}), 400
+
+        # 🔍 check if donor already paid
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT paid_or_not FROM donor_list WHERE name = %s", (donor_name,))
+        donor = cursor.fetchone()
+
+        if donor and donor['paid_or_not'] == 1:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': 'This donor has already paid.', 'user_error': True}), 400
+
         description = "Donation"
 
     elif txn_type == "Debit":
         description = data.get('description')
         if not description:
-            return jsonify({'success': False, 'message': 'Missing description'}), 400
+            return jsonify({'success': False, 'message': 'Missing description', 'user_error': True}), 400
 
     else:
-        return jsonify({'success': False, 'message': 'Invalid transaction type'}), 400
+        return jsonify({'success': False, 'message': 'Invalid transaction type', 'user_error': True}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
+    # 🟢 now proceed safely
     try:
-        # 1️⃣ Insert transaction
         query = """
             INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
             VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
 
-        # 2️⃣ Only update donor_list if first query succeeded
-        if txn_type == "Credit":
+        if txn_type == "Credit" and donor:
             query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
             cursor.execute(query, (donor_name,))
 
         conn.commit()
+        cursor.close()
+        conn.close()
         return jsonify({'success': True, 'message': 'Transaction saved successfully'}), 200
 
     except Exception as e:
-        conn.rollback()
-        print("Error:", e)
-        return jsonify({'success': False, 'message': 'Database error'}), 500
+        print(f"Database error: {e}")
+        return jsonify({'success': False, 'message': 'Database error', 'user_error': False}), 500
 
-    finally:
-        cursor.close()
-        conn.close()
 
 
 @app.route('/treasurer-section')

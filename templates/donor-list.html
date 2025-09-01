@@ -9,6 +9,8 @@
       margin: 0;
       padding: 20px;
       background: #f4f6f9;
+      font-size: 16px;   /* ✅ base size */
+      line-height: 1.6;
     }
 
     .container {
@@ -19,11 +21,12 @@
       margin: auto;
       box-shadow: 0 6px 15px rgba(0,0,0,0.1);
       position: relative;
+      overflow-x: auto;
     }
 
     .close-btn {
-      position: absolute;
-      top: 12px;
+      position: fixed;
+      top: 15px;
       right: 12px;
       background: #ff4d4d;
       color: #fff;
@@ -37,7 +40,62 @@
       align-items: center;
       justify-content: center;
       transition: 0.3s;
+      z-index: 1000;
     }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;   /* ✅ wrap on small screens */
+      margin: 15px 0;
+    }
+
+    .unpaid-info {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e63946;
+      margin: 5px 0;
+    }
+
+    #search {
+      flex: 1;
+      max-width: 300px;
+      padding: 10px 14px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    #search:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+    }
+
+    #search::placeholder {
+      color: #888;
+    }
+
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      }
+
+    .paid {
+      background: #d4edda;
+      color: #155724;
+    }
+    .unpaid {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
 
     .close-btn:hover {
       background: #e60000;
@@ -45,6 +103,7 @@
     }
 
     h2 {
+      font-size: 1.5rem;
       text-align: center;
       margin-bottom: 20px;
       color: #333;
@@ -60,6 +119,7 @@
       padding: 12px;
       border: 1px solid #ddd;
       text-align: left;
+      font-size: 1rem;
     }
 
     table th {
@@ -74,6 +134,20 @@
     table tr:hover {
       background: #f1f1f1;
     }
+
+    @media (max-width: 600px) 
+    {
+      body {
+        font-size: 18px;  /* ✅ slightly larger text on small screens */
+      }
+      table th, table td {
+        padding: 10px;
+        font-size: 1.1rem;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -82,6 +156,12 @@
     <button class="close-btn" onclick="window.history.back()">×</button>
 
     <h2>📜 Donor List (Total: {{ total }})</h2>
+
+    <div class="header-row">
+      <input type="text" id="search" placeholder="🔍 Search donors..." onkeyup="filterDonors()">
+      <p class="unpaid-info">❌ Unpaid Donors: {{ unpaid_count }}</p>
+    </div>
+
     <table>
       <thead>
         <tr>
@@ -97,11 +177,12 @@
           <td>{{ donor.amount }}</td>
           <td>
             {% if donor.paid_or_not == 1 %}
-              <span style="color:green;">✔️</span>
+              <span class="badge paid">Paid</span>
             {% else %}
-              <span style="color:red;">❌</span>
+              <span class="badge unpaid">Due</span>
             {% endif %}
           </td>
+
         </tr>
         {% else %}
         <tr>
@@ -111,5 +192,16 @@
       </tbody>
     </table>
   </div>
+  <script>
+    function filterDonors() {
+    let input = document.getElementById("search").value.toLowerCase();
+    let rows = document.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+      let name = row.cells[0]?.innerText.toLowerCase();
+      row.style.display = name.includes(input) ? "" : "none";
+    });
+    }
+  </script>
+
 </body>
 </html>

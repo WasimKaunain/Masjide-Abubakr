@@ -37,24 +37,6 @@
           box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.2),
                       -15px -15px 40px rgba(255, 255, 255, 0.9);
         }
-        
-        /* Optional: Add glowing border on hover */
-        .cash-form:hover::before {
-          content: "";
-          position: absolute;
-          inset: -5px;
-          border-radius: 22px;
-          background: linear-gradient(135deg, #6a11cb, #2575fc);
-          z-index: -1;
-          filter: blur(20px);
-          opacity: 0.5;
-          transition: opacity 0.3s ease;
-        }
-        
-        .cash-form:hover::before {
-          opacity: 1;
-}
-
       
         .cash-form h2 {
           font: 2em sans-serif;
@@ -289,39 +271,46 @@
     payload.description = description;
   }
 
-  try {
-    const response = await fetch('/submit-cash', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+try {
+  const response = await fetch('/submit-cash', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
-    const result = await response.json();
+  const result = await response.json();
 
-    if (response.ok && result.success) 
-    {
-      alert("Transaction submitted successfully.");
-      // ✅ refresh progress bar if the function exists
-      if (typeof updateProgressBar === "function") { updateProgressBar(); }
+  if (response.ok && result.success) {
+    alert("✅ Transaction submitted successfully.");
+    if (typeof updateProgressBar === "function") {
+      updateProgressBar();
+    }
+    window.location.href = '/treasurer-dashboard';
+  } else {
+    // Only show backend message if it's user-facing (like validation)
+    let msg = result.message || "Error submitting the form.";
 
-      window.location.href = '/treasurer-dashboard';
-    } 
-    else 
-    {
-      alert("Error submitting the form.");
-      resetSubmitButton();
+    // If it looks like a database/server error → mask it
+    if (/database|server|failed/i.test(msg)) {
+      msg = "⚠️ Something went wrong. Please try again.";
     }
 
-  } catch (error) {
-    console.error("Submission failed:", error);
-    alert("Something went wrong. Please try again.");
+    alert("❌ " + msg);
     resetSubmitButton();
   }
 
-  function resetSubmitButton() {
-    submitBtn.disabled = false;
-    spinner.style.display = "none";
-  }
+} catch (error) {
+  console.error("Submission failed:", error);
+  alert("⚠️ Something went wrong. Please try again.");
+  resetSubmitButton();
+}
+
+function resetSubmitButton() {
+  submitBtn.disabled = false;
+  spinner.style.display = "none";
+}
+
+
 }
 
       </script>
