@@ -309,6 +309,11 @@ def pay_salary():
         total_donations = cursor.fetchone()[0] or 0.0
         total_donations = float(total_donations)
 
+        # Calculate total due count for the common month
+        cursor.execute("SELECT COUNT(*) FROM donor_list WHERE paid_or_not = False")
+        total_due_count = cursor.fetchone()[0] or 0.0
+        total_due_count = int(total_due_count)
+
         # aininCalculate total debit transactions for the common month
         cursor.execute("SELECT SUM(Amount) FROM transactions WHERE Type = 'Debit'")
         total_debit = cursor.fetchone()[0] or 0.0
@@ -322,7 +327,7 @@ def pay_salary():
         
         prev_amount = float(last_row[0]) if last_row else 0.0
         total_rem_amount = prev_amount + remaining
-        cursor.execute(""" INSERT INTO monthly_report (month_name,total_credit,total_debit,remaining_amount,previous_amount,total_remaining_amount) VALUES (%s,%s,%s,%s,%s,%s)""", (new_title,total_donations,total_debit,remaining,prev_amount,total_rem_amount))
+        cursor.execute(""" INSERT INTO monthly_report (month_name,total_credit,total_debit,remaining_amount,previous_amount,total_remaining_amount,due_count) VALUES (%s,%s,%s,%s,%s,%s,%s)""", (new_title,total_donations,total_debit,remaining,prev_amount,total_rem_amount,total_due_count))
         conn.commit()
 
         print("Monthly report updated successfully.")
