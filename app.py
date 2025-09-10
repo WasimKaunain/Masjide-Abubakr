@@ -227,21 +227,31 @@ def submit_cash():
         description = data.get('description')
         if not description:
             return jsonify({'success': False, 'message': 'Missing description', 'user_error': True}), 400
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
     else:
         return jsonify({'success': False, 'message': 'Invalid transaction type', 'user_error': True}), 400
 
     # 🟢 now proceed safely
     try:
-        query = """
-            INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-        cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
+        if txn_type == "Credit":
+            query = """
+                INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (donor_name, amount, txn_type, description, timestamp))
 
-        if txn_type == "Credit" and donor:
-            query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
-            cursor.execute(query, (donor_name,))
+            if donor:
+                query = "UPDATE donor_list SET paid_or_not = TRUE WHERE name = %s"
+                cursor.execute(query, (donor_name,))
+
+        elif txn_type == "Debit":
+            query = """
+                INSERT INTO transactions (Amount, Type, Description, Timestamp)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(query, (amount, txn_type, description, timestamp))
 
         conn.commit()
         cursor.close()
