@@ -306,7 +306,7 @@ def pay_salary():
         cursor.execute(
             """INSERT INTO transactions (Name, Amount, Type, Description) 
             VALUES (%s, %s, %s, %s)""",
-            (payer, amount, 'Debit', 'Imam Sahab ka Wazeefa'))
+            (payer, amount, 'Debit', 'Imam Sahab ka Nazrana'))
         if conn:
             conn.commit()
         print("Salary payment inserted successfully.")
