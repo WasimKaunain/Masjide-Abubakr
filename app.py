@@ -471,9 +471,9 @@ def get_table_data(table):
         cursor.execute(f"SELECT SUM(Amount) as total FROM `{table}` WHERE Type='Debit'")
         total_debit = float(cursor.fetchone()["total"] or 0.0)
 
-        cursor.execute("SELECT total_remaining_amount FROM monthly_report WHERE month_name = %s", (table,))
+        cursor.execute("SELECT previous_amount FROM monthly_report WHERE month_name = %s", (table,))
         last_row = cursor.fetchone()
-        prev_balance = float(last_row["total_remaining_amount"]) if last_row else 0.0
+        prev_balance = float(last_row["previous_amount"]) if last_row else 0.0
 
         remaining = total_credit - total_debit
 
