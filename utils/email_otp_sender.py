@@ -1,4 +1,4 @@
-import smtplib
+import smtplib,traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import random, time, os
@@ -21,20 +21,20 @@ def send_email_otp(to_email):
     msg['To'] = to_email
     msg['Subject'] = "Your OTP Code"
     msg.attach(MIMEText(f"Your OTP is: {otp}. It is valid for 5 minutes.", 'plain'))
-    print("Mail is ready to be sent...")
 
     try:
-        print("Connecting to SMTP...")
-        server = smtplib.SMTP('email-smtp.ap-south-1.amazonaws.com', 587)
-        print("connected to server..")
+        # short socket timeout so it fails fast if connection issue
+        server = smtplib.SMTP('email-smtp.ap-south-1.amazonaws.com', 587, timeout=10)
+        server.set_debuglevel(1)   # <-- prints SMTP dialogue to logs
+        server.ehlo()
         server.starttls()
-        print("starting TLS...")
+        server.ehlo()
         server.login(smtp_user, smtp_pass)
-        print("Sending email...")
         server.sendmail(sender_email, to_email, msg.as_string())
         server.quit()
         print("OTP sent to", to_email)
         return True
     except Exception as e:
-        print("Error sending OTP:", e)
+        print("Error sending OTP:", repr(e))
+        traceback.print_exc()   # <-- full stack trace in logs
         return False
