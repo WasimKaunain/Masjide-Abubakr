@@ -27,10 +27,15 @@ def send_email_otp(to_email):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
+        print("Connecting to SMTP...")
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        print("Logging in...")
         server.login(sender_email, app_password)
+        print("Sending email...")
         server.sendmail(sender_email, to_email, msg.as_string())
+        print("Email sent, quitting server...")
         server.quit()
+
         print("OTP sent to", to_email)
         return True
     except Exception as e:
