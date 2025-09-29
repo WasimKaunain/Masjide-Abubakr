@@ -1,9 +1,14 @@
-import smtplib,traceback
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import random, time, os
+import boto3, os, time, random
+from botocore.exceptions import ClientError
 
-OTP_STORE = {}  # Store OTP temporarily (email → otp + expiry)
+OTP_STORE = {}
+
+ses = boto3.client(
+    "ses",
+    region_name="ap-south-1",
+    aws_access_key_id=os.getenv("ACCESS_KEY"),
+    aws_secret_access_key=os.getenv("SECRET_ACCESS_KEY")
+)
 
 def generate_otp():
     return str(random.randint(100000, 999999))
@@ -11,30 +16,19 @@ def generate_otp():
 def send_email_otp(to_email):
     otp = generate_otp()
     OTP_STORE[to_email] = {'otp': otp, 'expires': time.time() + 300}
-
-    sender_email = os.getenv("DEVELOPER_EMAIL")
-    smtp_user = os.getenv("SES_SMTP_USERNAME")
-    smtp_pass = os.getenv("SES_SMTP_PASSWORD")
-
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = to_email
-    msg['Subject'] = "Your OTP Code"
-    msg.attach(MIMEText(f"Your OTP is: {otp}. It is valid for 5 minutes.", 'plain'))
+    sender = os.getenv("DEVELOPER_EMAIL")
 
     try:
-        # short socket timeout so it fails fast if connection issue
-        server = smtplib.SMTP('email-smtp.ap-south-1.amazonaws.com', 587, timeout=10)
-        server.set_debuglevel(1)   # <-- prints SMTP dialogue to logs
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        server.login(smtp_user, smtp_pass)
-        server.sendmail(sender_email, to_email, msg.as_string())
-        server.quit()
+        ses.send_email(
+            Source=sender,
+            Destination={"ToAddresses": [to_email]},
+            Message={
+                "Subject": {"Data": "Your OTP Code"},
+                "Body": {"Text": {"Data": f"Your OTP is {otp}. Valid for 5 minutes."}}
+            }
+        )
         print("OTP sent to", to_email)
         return True
-    except Exception as e:
-        print("Error sending OTP:", repr(e))
-        traceback.print_exc()   # <-- full stack trace in logs
+    except ClientError as e:
+        print("SES Error:", e.response["Error"]["Message"])
         return False
