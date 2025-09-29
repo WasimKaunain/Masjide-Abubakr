@@ -10,32 +10,26 @@ def generate_otp():
 
 def send_email_otp(to_email):
     otp = generate_otp()
-    OTP_STORE[to_email] = {
-        'otp': otp,
-        'expires': time.time() + 300  # valid for 5 minutes
-    }
+    OTP_STORE[to_email] = {'otp': otp, 'expires': time.time() + 300}
 
     sender_email = os.getenv("DEVELOPER_EMAIL")
-    app_password = os.getenv("EMAIL_APP_PASSWORD")
+    smtp_user = os.getenv("SES_SMTP_USERNAME")
+    smtp_pass = os.getenv("SES_SMTP_PASSWORD")
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = to_email
     msg['Subject'] = "Your OTP Code"
-
-    body = f"Your OTP is: {otp}. It is valid for 5 minutes."
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(f"Your OTP is: {otp}. It is valid for 5 minutes.", 'plain'))
 
     try:
         print("Connecting to SMTP...")
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        print("Logging in...")
-        server.login(sender_email, app_password)
+        server = smtplib.SMTP('email-smtp.ap-south-1.amazonaws.com', 587)
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
         print("Sending email...")
         server.sendmail(sender_email, to_email, msg.as_string())
-        print("Email sent, quitting server...")
         server.quit()
-
         print("OTP sent to", to_email)
         return True
     except Exception as e:
