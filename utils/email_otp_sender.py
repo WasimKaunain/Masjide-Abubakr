@@ -21,11 +21,14 @@ def send_email_otp(to_email):
     msg['To'] = to_email
     msg['Subject'] = "Your OTP Code"
     msg.attach(MIMEText(f"Your OTP is: {otp}. It is valid for 5 minutes.", 'plain'))
+    print("Mail is ready to be sent...")
 
     try:
         print("Connecting to SMTP...")
         server = smtplib.SMTP('email-smtp.ap-south-1.amazonaws.com', 587)
+        print("connected to server..")
         server.starttls()
+        print("starting TLS...")
         server.login(smtp_user, smtp_pass)
         print("Sending email...")
         server.sendmail(sender_email, to_email, msg.as_string())
