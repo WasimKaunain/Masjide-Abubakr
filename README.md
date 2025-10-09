@@ -1,4 +1,4 @@
-# 🕌 Masjide AbuBakr – Mosque Foundation Donation Web App
+# 🕌 Masjide AbuBakr – Mosque Donation Web App
 
 A modern, secure, and responsive web application designed to support mosque fundraising efforts. Built with simplicity, transparency, and community trust in mind.
 
