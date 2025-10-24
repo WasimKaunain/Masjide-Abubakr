@@ -63,6 +63,12 @@ async function verifyOTP() {
 
 
 async function submitSalaryForm() {
+  const spinner = document.getElementById("spinner");
+  const submitBtn = document.getElementById("submit-button")
+  // Disable button and show spinner
+  submitBtn.disabled = true;
+  spinner.style.display = "inline-block";
+
   const payerName = document.getElementById("salary-payer-name").value;
   const amount = document.getElementById("salary-amount").value;
   const date = document.getElementById("date").value;
@@ -89,6 +95,7 @@ async function submitSalaryForm() {
           else 
             {
             alert("Failed to submit form");
+            resetSubmitButton();
             };
 
       } 
@@ -96,6 +103,12 @@ async function submitSalaryForm() {
       {
         console.error("Error : ",error);
         alert("Error submitting form");
+        resetSubmitButton();
       } 
   
+}
+
+function resetSubmitButton() {
+  submitBtn.disabled = false;
+  spinner.style.display = "none";
 }

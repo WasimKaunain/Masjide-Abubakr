@@ -89,6 +89,24 @@
 
         .auth-card button:hover {
           background-color: #1b5e20;
+
+        /* Spinner Styling */
+        #spinner {
+          display: none; /* default hidden */
+          font-size: 1.2rem;
+          animation: spin 1s linear infinite;
+        }
+
+        /* Show spinner when button is loading */
+        .auth-card button.loading #spinner {
+          display: inline-block;
+        }
+
+        /* Spinner animation */
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
         }
 
       </style>
@@ -108,7 +126,10 @@
         <input type="date" id="date" placeholder="Select date">
       
       
-        <button onclick="submitSalaryForm()">Submit</button>
+        <button id = "submit-button" onclick="submitSalaryForm()">
+          Submit
+          <span id="spinner" style="display:none; margin-left:10px;">⏳</span>
+        </button>
       </div>
     
     
