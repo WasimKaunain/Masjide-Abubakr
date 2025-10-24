@@ -1,4 +1,4 @@
-# 🕌 Masjide AbuBakr – Mosque Foundation Donation Web App
+# 🕌 Masjide AbuBakr – Mosque Donation Web App
 
 A modern, secure, and responsive web application designed to support mosque fundraising efforts. Built with simplicity, transparency, and community trust in mind.
 
@@ -87,8 +87,6 @@ App will run on: http://127.0.0.1:5000/
 Sensitive keys, emails, and credentials are stored in:
 secrets/config.json
 .env (if extended with dotenv)
-
-NOTE : Make sure not to push these files to version control.
 ```
 
 ## 📧 Contact
