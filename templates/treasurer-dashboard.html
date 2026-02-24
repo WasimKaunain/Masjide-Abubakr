@@ -10,6 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Roboto&display=swap" rel="stylesheet">
 
   <style>
+
+    * {
+        box-sizing: border-box;
+      }
+
     body {
       font-family: 'Roboto', sans-serif;
       margin: 0;
@@ -18,9 +23,13 @@
       min-height: 100vh;
     }
 
+    /* =======================
+       TOP BAR – DESKTOP DEFAULT
+       ======================= */
+
     .top-bar {
       width: 100%;
-      padding: 10px 20px;
+      padding: 15px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -29,32 +38,49 @@
       margin-bottom: 100px;
     }
 
-    @media (min-width: 769px) {
-      .buttons {
-        flex-direction: row;
-        justify-content: center;
-        gap: 100px;
-      }
-      .fancy-btn {
-        width: 180px;
-      }
-      .top-bar {
-        flex-direction: row;
-        align-items: center;
-        gap: 0;
-      }
+    .top-bar h2 {
+      font-size: 22px;
+      margin: 0;
+      text-align: left;
+    }
+
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .top-bar form {
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 10px;
-      margin-right: 20px;
+      margin: 0;
     }
 
-    .top-bar h2 {
-      margin-left: 20px;
-      font-size: 22px;
+    /* =======================
+       BUTTONS
+       ======================= */
+
+    .btn-reminder {
+      background: linear-gradient(135deg, #ffb347, #ffcc33);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-reminder:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 16px rgba(255, 193, 7, 0.6);
+    }
+
+    .btn-reminder:active {
+      transform: scale(0.98);
     }
 
     .btn-logout {
@@ -65,9 +91,15 @@
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      margin-right: 20px; /* 👈 fixed typo (no space) */
     }
-    .btn-logout:hover { background-color: #b71c1c; }
+
+    .btn-logout:hover {
+      background-color: #b71c1c;
+    }
+
+    /* =======================
+       WELCOME SECTION
+       ======================= */
 
     .welcome-section {
       text-align: center;
@@ -89,15 +121,15 @@
       font-weight: 600;
     }
 
-    /* ===== Mobile-first: stack by default ===== */
+    /* =======================
+       ACTION BUTTONS – DESKTOP
+       ======================= */
+
     .buttons {
       display: flex;
-      flex-direction: column;   /* stack vertically on mobile */
-      align-items: center;
-      gap: 50px;
+      justify-content: center;
+      gap: 100px;
       margin: 40px 0;
-      width: 100%;
-      flex-wrap: nowrap;        /* ensure no side-by-side wrap */
     }
 
     .fancy-btn {
@@ -105,7 +137,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: min(90%, 350px);   /* big, comfy mobile buttons */
+      width: 180px;
       height: 180px;
       border-radius: 25px;
       background: linear-gradient(145deg, #f9f9f9, #e0e0e0);
@@ -115,43 +147,91 @@
       color: #333;
       text-align: center;
       transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
       text-decoration: none;
     }
 
-    .fancy-btn .icon { font-size: 3rem; margin-bottom: 12px; }
-    .fancy-btn .label { font-size: 1rem; font-weight: 600; }
+    .fancy-btn .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .fancy-btn .label {
+      font-size: 1rem;
+      font-weight: 600;
+    }
 
     .fancy-btn:hover {
       transform: translateY(-8px) scale(1.05);
-      box-shadow: 12px 12px 25px rgba(0,0,0,0.25),
-                  -8px -8px 18px rgba(255,255,255,0.7);
-      background: linear-gradient(145deg, #ffffff, #dcdcdc);
-    }
-    .fancy-btn:active {
-      transform: translateY(0) scale(0.96);
-      box-shadow: inset 4px 4px 12px rgba(0,0,0,0.15),
-                  inset -4px -4px 12px rgba(255,255,255,0.7);
     }
 
-    /* Tiny phones polish */
-    @media (max-width: 480px) {
-      .fancy-btn { width: 95%; font-size: 14px; }
-      .treasurer-name { font-size: 34px; }
-      .welcome-section h1 { font-size: 24px; }
-      .top-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .top-bar h2 { font-size: 18px; }
+    .fancy-btn:active {
+      transform: scale(0.96);
     }
+
+    /* =======================
+       MOBILE OVERRIDES ONLY
+       ======================= */
+
+    @media (max-width: 768px) {
+
+      /* TOP BAR MOBILE LAYOUT */
+      .top-bar {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .top-bar h2 {
+        text-align: center;
+        width: 100%;
+        font-size: 20px;
+      }
+
+      .top-bar-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between; /* reminder left, logout right */
+        align-items: center;
+      }
+
+      /* BUTTON STACKING */
+      .buttons {
+        flex-direction: column;
+        gap: 50px;
+        align-items: center;
+      }
+
+      .fancy-btn {
+        width: 90%;
+        max-width: 350px;
+      }
+
+      .welcome-section h1 {
+        font-size: 26px;
+      }
+
+      .treasurer-name {
+        font-size: 34px;
+      }
+    }
+
   </style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <h2 data-i18n="treasurer-section-header">Treasurer Section</h2>
-    <form action="{{ url_for('logout') }}" method="POST">
-      <button class="btn-logout" type="submit">Logout</button>
-    </form>
+    <div class="top-bar">
+      <h2 data-i18n="treasurer-section-header">Treasurer Section</h2>
+    <div class="top-bar-actions">
+      <!-- Reminder Button -->
+      <button class="btn-reminder" type="button" title="Set Reminder" onclick="send-sendReminders()">
+      ⏰ Reminder
+      </button>
+
+      <!-- Logout Button -->
+      <form action="{{ url_for('logout') }}" method="POST">
+        <button class="btn-logout" type="submit">Logout</button>
+      </form>
+    </div>
   </div>
 
   <div class="welcome-section">
@@ -175,6 +255,61 @@
       </a>
     </div>
   </div>
+
+  <script>
+      async function sendReminders() {
+      const confirmSend = confirm(
+        "This will send WhatsApp reminders to all unpaid donors. Continue?"
+      );
+        
+      if (!confirmSend) return;
+        
+      try {
+        const response = await fetch("/api/send-reminders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+      
+        if (!response.ok) {
+          throw new Error("Server error while sending reminders");
+        }
+      
+        const data = await response.json();
+      
+        /*
+          Expected backend response NOW:
+      
+          {
+            "month_name": "November",
+            "total_unpaid": 15,
+            "sent": 14,
+            "failed": 1
+          }
+        */
+      
+        if (data.total_unpaid === 0) {
+          alert("No unpaid donors found. No reminders sent.");
+          return;
+        }
+      
+        alert(
+          `WhatsApp reminders summary:\n\n` +
+          `Month: ${data.month_name}\n` +
+          `Total unpaid donors: ${data.total_unpaid}\n` +
+          `Messages sent: ${data.sent}\n` +
+          `Failed: ${data.failed}`
+        );
+      
+      } catch (error) {
+        console.error("Reminder error:", error);
+        alert("Failed to send reminders. Please try again or check logs.");
+      }
+    }
+
+  </script>
+
 
 </body>
 </html>

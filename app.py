@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, render_template,session,url_for,redirect
 from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import*
+from utils.whatsapp_sender import*
 import time, mysql.connector
-import os, datetime
+import os, datetime, tempfile
 from dotenv import load_dotenv
 from mysql.connector import pooling
 
@@ -11,13 +12,22 @@ app = Flask(__name__)
 app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
 load_dotenv()
 
-# Database configuration
+# 🔹 Create temp CA file from ENV
+ca_content = os.getenv("CA_CERT")
+
+with tempfile.NamedTemporaryFile(delete=False) as f:
+    f.write(ca_content.encode())
+    ca_path = f.name
+
+# 🔹 Database configuration with SSL
 db_config = {
     'host': os.getenv('DB_HOST'),
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
-    'port': os.getenv('DB_PORT')  
+    'port': int(os.getenv('DB_PORT')),
+    'ssl_ca': ca_path,
+    'ssl_verify_cert': True
 }
 
 connection_pool = pooling.MySQLConnectionPool(pool_name="mypool", pool_size=10,pool_reset_session=True, **db_config)
@@ -494,6 +504,78 @@ def get_table_data(table):
             cursor.close()
         if conn and conn.is_connected():
             conn.close()
+
+@app.route('/api/send-reminders', methods=['POST'])
+def send_reminders():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1️⃣ Get latest month
+        cursor.execute("""
+            SELECT month_name
+            FROM monthly_report
+            ORDER BY month_name DESC
+            LIMIT 1
+        """)
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({'error': 'No monthly data found'}), 400
+
+        last_month_str = row['month_name']  # e.g. transactions_2025_10
+
+        try:
+            _, year, month = last_month_str.split('_')
+            year = int(year)
+            month = int(month)
+        except ValueError:
+            return jsonify({'error': 'Invalid month format in DB'}), 500
+
+        # 2️⃣ Compute next month name
+        import calendar
+        if month == 12:
+            month = 1
+        else:
+            month += 1
+
+        month_name_readable = calendar.month_name[month]
+
+        # 3️⃣ Fetch unpaid donors
+        cursor.execute("""
+            SELECT name, phone, amount
+            FROM donor_list
+            WHERE paid_or_not = 0
+        """)
+        donors = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        total_unpaid = len(donors)
+
+        if total_unpaid == 0:
+            return jsonify({
+                "month_name": month_name_readable,
+                "total_unpaid": 0,
+                "sent": 0,
+                "failed": 0
+            })
+
+        # 4️⃣ Call internal reminder sender
+        sent, failed = send_whatsapp_reminders(donors, month_name_readable)
+
+        # 5️⃣ Final response (exactly what JS expects)
+        return jsonify({
+            "month_name": month_name_readable,
+            "total_unpaid": total_unpaid,
+            "sent": sent,
+            "failed": failed
+        })
+
+    except Exception as e:
+        print(f"Error in send-reminders API: {e}")
+        return jsonify({'error': 'Failed to send reminders'}), 500
 
 
 if __name__ == "__main__":
