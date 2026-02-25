@@ -1,3 +1,4 @@
+import email
 from flask import Flask, request, jsonify, render_template,session,url_for,redirect
 from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import*
@@ -61,8 +62,10 @@ def send_otp():
         return jsonify({'message': 'Unauthorized email'}), 403
 
     try:
-        send_email_otp(email)
-        session['email'] = email  # ✅ STORE EMAIL IN SESSION
+        if not send_email_otp(email):
+            return jsonify({'message': 'Failed to send OTP'}), 500
+
+        session['email'] = email
         return jsonify({'message': 'OTP sent successfully'}), 200
     except Exception as e:
         print(f"Error sending OTP: {e}")
