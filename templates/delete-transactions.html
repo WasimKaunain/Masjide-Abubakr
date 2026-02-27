@@ -91,6 +91,27 @@
       padding: 12px;
     }
     }
+
+    .spinner {
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 8px;
+        }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -104,7 +125,7 @@
 
 <div class="buttons">
   <button class="cancel-btn" onclick="window.history.back()">Cancel</button>
-  <button class="delete-btn" onclick="confirmDeletion()">Delete</button>
+  <button id="deleteBtn" class="delete-btn" onclick="confirmDeletion()">Delete</button>
 </div>
 
 <script>
@@ -172,21 +193,41 @@ function confirmDeletion() {
 }
 
 
+let isDeleting = false;
+
 async function deleteTransactions(records) {
-  const response = await fetch('/delete-transactions', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({records})
-  });
 
-  const result = await response.json();
+  if (isDeleting) return;
 
-  if (result.success) {
-    alert("Transactions deleted successfully.");
-    loadTransactions();
-  } else {
-    alert("Deletion failed.");
+  isDeleting = true;
+
+  const deleteBtn = document.getElementById('deleteBtn');
+  deleteBtn.disabled = true;
+  deleteBtn.innerHTML = `<span class="spinner"></span>Deleting...`;
+
+  try {
+    const response = await fetch('/delete-transactions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({records})
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert("Transactions deleted successfully.");
+      loadTransactions();
+    } else {
+      alert("Deletion failed.");
+    }
+
+  } catch (error) {
+    alert("Something went wrong.");
   }
+
+  deleteBtn.disabled = false;
+  deleteBtn.innerHTML = "Delete";
+  isDeleting = false;
 }
 
 loadTransactions();
