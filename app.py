@@ -10,7 +10,7 @@ from mysql.connector import pooling
 
 
 app = Flask(__name__)
-app.secret_key = "9f378e4b3122efb1b5a7862a57a679236ca12cf6d833fef3a35e9482f41cba12"
+app.secret_key = os.getenv('SECRET_KEY')
 load_dotenv()
 
 # 🔹 Create temp CA file from ENV
@@ -579,7 +579,138 @@ def send_reminders():
     except Exception as e:
         print(f"Error in send-reminders API: {e}")
         return jsonify({'error': 'Failed to send reminders'}), 500
+    
+@app.route('/delete-transactions-page')
+def delete_transactions_page():
+    if 'treasurer_name' not in session:
+        return redirect(url_for('treasurer_section'))
+    return render_template('delete-transactions.html')
+
+@app.route('/delete-transactions', methods=['POST'])
+def delete_transactions():
+    try:
+        data = request.get_json()
+        records = data.get('records', [])
+
+        if not records:
+            return jsonify({'success': False, 'message': 'No transactions selected'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        for record in records:
+            name = record.get('Name')
+            amount = record.get('Amount')
+            txn_type = record.get('Type')
+            description = record.get('Description')
+
+            # If Credit → update donor_list
+            if txn_type == 'Credit' and name:
+                cursor.execute("""
+                    UPDATE donor_list
+                    SET paid_or_not = 0
+                    WHERE name = %s
+                """, (name,))
+
+            # Delete transaction
+            cursor.execute("""
+                DELETE FROM transactions
+                WHERE Name = %s
+                AND Amount = %s
+                AND Type = %s
+                AND (Description <=> %s)
+            """, (name, amount, txn_type, description))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print("Delete error:", e)
+        return jsonify({'success': False, 'message': 'Deletion failed'}), 500
+    
+@app.route('/get-unpaid-donors')
+def get_unpaid_donors():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT name, amount
+            FROM donor_list
+            WHERE paid_or_not = 0
+        """)
+
+        donors = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(donors)
+
+    except Exception as e:
+        print("Error fetching unpaid donors:", e)
+        return jsonify({'error': 'Failed to fetch donors'}), 500
+    
+@app.route('/bulk-submit-cash', methods=['POST'])
+def bulk_submit_cash():
+    try:
+        data = request.get_json()
+        donors = data.get('donors', [])  # list of {name, amount}
+
+        if not donors:
+            return jsonify({'success': False, 'message': 'No donors selected'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        timestamp = datetime.datetime.now()
+
+        # 🔒 Start transaction
+        for donor in donors:
+            name = donor.get('name')
+            amount = donor.get('amount')
+
+            # Double safety check
+            cursor.execute("SELECT paid_or_not FROM donor_list WHERE name = %s", (name,))
+            row = cursor.fetchone()
+
+            if not row or row['paid_or_not'] == 1:
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                return jsonify({'success': False, 'message': f"{name} already paid."}), 400
+
+            # Insert transaction
+            cursor.execute("""
+                INSERT INTO transactions (Name, Amount, Type, Description, Timestamp)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (name, amount, "Credit", "Donation", timestamp))
+
+            # Update donor status
+            cursor.execute("""
+                UPDATE donor_list
+                SET paid_or_not = 1
+                WHERE name = %s
+            """, (name,))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print("Bulk insert error:", e)
+        return jsonify({'success': False, 'message': 'Bulk insert failed'}), 500
+    
+@app.route('/bulk-create-page')
+def bulk_create_page():
+    return render_template('bulk_create.html')
 
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=10000)
+

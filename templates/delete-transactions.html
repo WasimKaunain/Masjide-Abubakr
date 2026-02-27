@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Delete Transactions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(120deg, #e0f7fa, #e1bee7);
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #4a148c;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .transaction-container {
+      max-height: 400px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .transaction-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cancel-btn {
+      background: #9e9e9e;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #d32f2f;
+      color: white;
+    }
+
+      @media (max-width: 600px) {
+    body {
+      padding: 12px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    .transaction-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+    }
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Delete Transactions (Current Month)</h2>
+
+<input type="text" id="searchInput" class="search-box" placeholder="Search by name..." onkeyup="filterTransactions()">
+
+<div class="transaction-container" id="transactionList"></div>
+
+<div class="buttons">
+  <button class="cancel-btn" onclick="window.history.back()">Cancel</button>
+  <button class="delete-btn" onclick="confirmDeletion()">Delete</button>
+</div>
+
+<script>
+let transactions = [];
+
+async function loadTransactions() {
+  const response = await fetch('/get-transactions');
+  transactions = await response.json();
+  renderTransactions(transactions);
+}
+
+function renderTransactions(data) {
+  const container = document.getElementById('transactionList');
+  container.innerHTML = '';
+
+  data.forEach(txn => {
+    const row = document.createElement('div');
+    row.className = 'transaction-row';
+
+    // Create unique string key
+    const key = `${txn.Name}|${txn.Amount}|${txn.Type}|${txn.Description}`;
+
+    row.innerHTML = `
+      <div>
+        <strong>${txn.Name || "—"}</strong> - ₹${txn.Amount}
+      </div>
+      <input type="checkbox" value="${key}">
+    `;
+
+    container.appendChild(row);
+  });
+}
+
+function filterTransactions() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = transactions.filter(txn =>
+    txn.Name && txn.Name.toLowerCase().includes(search)
+  );
+  renderTransactions(filtered);
+}
+
+function confirmDeletion() {
+  const checked = document.querySelectorAll('input[type="checkbox"]:checked');
+
+  if (checked.length === 0) {
+    alert("No transactions selected.");
+    return;
+  }
+
+  let summary = "You are about to delete:\n\n";
+  let records = [];
+
+  checked.forEach(cb => {
+    const [Name, Amount, Type, Description] = cb.value.split("|");
+
+    summary += `${Name || "—"} - ₹${Amount}\n`;
+
+    records.push({ Name, Amount, Type, Description });
+  });
+
+  const finalConfirm = confirm(summary + "\nAre you sure?");
+  if (!finalConfirm) return;
+
+  deleteTransactions(records);
+}
+
+
+async function deleteTransactions(records) {
+  const response = await fetch('/delete-transactions', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({records})
+  });
+
+  const result = await response.json();
+
+  if (result.success) {
+    alert("Transactions deleted successfully.");
+    loadTransactions();
+  } else {
+    alert("Deletion failed.");
+  }
+}
+
+loadTransactions();
+</script>
+
+</body>
+</html>

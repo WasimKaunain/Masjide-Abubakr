@@ -238,22 +238,33 @@
     <h1 data-i18n="welcome-msg">Welcome to Treasurer Section!</h1>
     <div class="treasurer-name">Mr. {{ treasurer_name }}</div>
 
-    <div class="buttons">
-      <a href="{{ url_for('salary_form') }}" class="fancy-btn">
-        <div class="icon">💰</div>
-        <div class="label" data-i18n="salary-payment">Salary Payment</div>
-      </a>
-
-      <a href="{{ url_for('cash_form') }}" class="fancy-btn">
-        <div class="icon">📥</div>
-        <div class="label" data-i18n="create-transaction">Create Transaction</div>
-      </a>
-
-      <a href="{{ url_for('donor_form') }}" class="fancy-btn">
-        <div class="icon">👥</div>
-        <div class="label" data-i18n="add-remove">Add/Remove Donor</div>
-      </a>
-    </div>
+      <div class="buttons">
+        <a href="{{ url_for('salary_form') }}" class="fancy-btn">
+          <div class="icon">💰</div>
+          <div class="label" data-i18n="salary-payment">Salary Payment</div>
+        </a>
+      
+        <a href="{{ url_for('cash_form') }}" class="fancy-btn">
+          <div class="icon">📥</div>
+          <div class="label" data-i18n="create-transaction">Create Transaction</div>
+        </a>
+      
+        <!-- ✅ NEW BULK CREATE BUTTON -->
+        <a href="{{ url_for('bulk_create_page') }}" class="fancy-btn">
+          <div class="icon">📦</div>
+          <div class="label">Bulk Create Transaction</div>
+        </a>
+      
+        <a href="{{ url_for('donor_form') }}" class="fancy-btn">
+          <div class="icon">👥</div>
+          <div class="label" data-i18n="add-remove">Add/Remove Donor</div>
+        </a>
+      
+        <a href="{{ url_for('delete_transactions_page') }}" class="fancy-btn">
+          <div class="icon">🗑️</div>
+          <div class="label">Delete Transaction</div>
+        </a>
+      </div>
   </div>
 
   <script>

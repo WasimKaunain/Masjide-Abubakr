@@ -5,3 +5,4 @@ encoded.txt
 main_encoded.txt
 secrets/
 venv/
+ca.pem
