@@ -223,7 +223,7 @@
       <h2 data-i18n="treasurer-section-header">Treasurer Section</h2>
     <div class="top-bar-actions">
       <!-- Reminder Button -->
-      <button class="btn-reminder" type="button" title="Set Reminder" onclick="send-sendReminders()">
+      <button class="btn-reminder" type="button" title="Set Reminder" onclick="sendReminders()">
       ⏰ Reminder
       </button>
 
@@ -276,7 +276,7 @@
       if (!confirmSend) return;
         
       try {
-        const response = await fetch("/api/send-reminders", {
+        const response = await fetch("/send-reminders", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

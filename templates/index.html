@@ -871,24 +871,35 @@ table tfoot td {
   });
 
   // On page load
-  window.addEventListener("DOMContentLoaded", function () {
+  window.addEventListener("DOMContentLoaded", function () 
+  {
+    // 🔥 PRELOAD CACHE (IMPORTANT)
+    window.cachedData = null;
+
+    fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => {window.cachedData = data;}).catch(() => {});
+
     const preferredLang = localStorage.getItem("preferredLang") || "en";
     document.getElementById("language-selector").value = preferredLang;
     setLanguage(preferredLang);
+
+    // ---- call on initial page load ----
+    updateProgressBar();
+
+    const selector = document.getElementById("table-selector");
+    selector.innerHTML = "<option>Loading months...</option>";
+
+    // 🟢 Try cache first
+    fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => 
+      {
+        if (data.tables) {populateDropdown(data.tables);}
+        else {throw "No cache tables";}
+      }).catch(() => 
+      {
+        // 🔵 fallback to backend
+        fetch('/get_tables').then(res => res.json()).then(tables => populateDropdown(tables)).catch(err => console.error("Failed to fetch tables:", err));
+      });
   });
 
-  // Load dropdown on page load
-document.addEventListener("DOMContentLoaded", () => {
-  const selector = document.getElementById("table-selector");
-  selector.innerHTML = "<option>Loading months...</option>";
-  
-  fetch('/get_tables')
-    .then(res => res.json())
-    .then(tables => {
-      populateDropdown(tables);
-    })
-    .catch(err => console.error("Failed to fetch tables:", err));
-});
 
 function populateDropdown(tableNames) {
   const selector = document.getElementById("table-selector");
@@ -984,70 +995,103 @@ function loadTableData()
 
 <script>
   let selectedAmount = 0;
+  function renderTransactions(data) 
+    {
+        const tbody = document.querySelector('#transaction-table tbody');
+        tbody.innerHTML = '';
 
-  function switchTab(tab) {
-  // Hide all content sections
-  document.querySelectorAll('.content').forEach(div => {
-    div.style.display = 'none';
-  });
+        let total = 0;
 
-  // Remove active class from all tabs
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        data.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.Name}</td>
+            <td>₹${parseFloat(row.Amount).toFixed(2)}</td>
+            <td>${row.Type}</td>
+            <td>${row.Description}</td>
+          `;
+          tbody.appendChild(tr);
+        
+          const amount = parseFloat(row.Amount);
+          if ((row.Type || '').toLowerCase() === 'credit') total += amount;
+          else total -= amount;
+        });
+      
+        document.getElementById('total-amount').textContent = '₹' + total.toFixed(2);
+    }
 
-  // Add active class to the clicked tab
-  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  function switchTab(tab) 
+    {
+      // Hide all content sections
+      document.querySelectorAll('.content').forEach(div => {div.style.display = 'none';});
 
-  // Show the selected tab's content with proper layout
-  const selectedContent = document.getElementById(tab);
-  if (selectedContent) {
-    selectedContent.style.display = 'flex';
-    selectedContent.style.justifyContent = 'center';  // center horizontally
-    selectedContent.style.alignItems = 'center';      // center vertically (if needed)
-    selectedContent.style.flexDirection = 'column';   // stack content vertically
-  }
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
-  // Load transactions data if tab is "transactions"
-  if (tab === 'transactions') {
-fetch('/get-transactions')
-  .then(res => res.json())
-  .then(data => {
-    const tbody = document.querySelector('#transaction-table tbody');
-    document.getElementById("table-header").style.display = "block";
-    document.getElementById("table-header").innerText = "Current Month";
-    
-    tbody.innerHTML = '';
-    let total = 0;
-    data.forEach(row => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${row.Name}</td><td>₹${row.Amount}</td><td>${row.Type}</td><td>${row.Description}</td>`;
-      tbody.appendChild(tr);
+      // Add active class to the clicked tab
+      document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
 
-      const amount = parseFloat(row.Amount);
-      const type = row.Type.trim().toLowerCase();  // Normalize the type
+      // Show the selected tab's content with proper layout
+      const selectedContent = document.getElementById(tab);
 
-      if (type === 'credit') {
-        total += amount;
-      } else if (type === 'debit') {
-        total -= amount;
+      if (selectedContent) 
+      {
+        selectedContent.style.display = 'flex';
+        selectedContent.style.justifyContent = 'center';  // center horizontally
+        selectedContent.style.alignItems = 'center';      // center vertically (if needed)
+        selectedContent.style.flexDirection = 'column';   // stack content vertically
       }
-    });
 
-    document.getElementById('total-amount').textContent = '₹' + total.toFixed(2);
-  });
+      // Load transactions data if tab is "transactions"
+      if (tab === 'transactions') 
+      {
+          document.getElementById("table-header").style.display = "block";
+          document.getElementById("table-header").innerText = "Current Month";
 
-  // Fetch previous balance
-  fetch('/get-previous-balance')
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('previous-balance').textContent = '₹' + parseFloat(data.previous_balance).toFixed(2);
-    });
-
-  }
-}
-// ---- call on initial page load ----
-document.addEventListener("DOMContentLoaded", () => {
-  updateProgressBar();
-});
+          if (window.cachedData && window.cachedData.transactions) 
+            {
+              // 🟢 USE MEMORY CACHE (FASTEST)
+              renderTransactions(window.cachedData.transactions);
+              document.getElementById('previous-balance').textContent ='₹' + window.cachedData.previous_balance.toFixed(2);
+            } 
+          else 
+            {
+              // 🟡 fallback to static cache file
+              fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => 
+                {
+                  renderTransactions(data.transactions);
+                  document.getElementById('previous-balance').textContent ='₹' + data.previous_balance.toFixed(2);
+                }).catch(() => { document.querySelector('#transaction-table tbody').innerHTML =  '<tr><td colspan="4">Loading...</td></tr>';});
+            }
+          
+          // 🔵 STEP 2: Background refresh (REAL API)
+          fetch('/get-transactions').then(res => {if (!res.ok) throw new Error("API failed");return res.json();}).then(data => 
+            {
+              // 🟢 Update UI
+              renderTransactions(data);
+            
+              // 🟡 Save to localStorage
+              localStorage.setItem("transactions", JSON.stringify(data));
+            
+              // 🔥 Update memory cache (VERY IMPORTANT)
+              if (window.cachedData) {window.cachedData.transactions = data;} 
+              else {window.cachedData = { transactions: data };}
+            })
+            .catch(() => {
+            
+              // 🟡 Fallback to localStorage
+              const local = localStorage.getItem("transactions");
+              if (local) {renderTransactions(JSON.parse(local));} 
+              else {document.querySelector('#transaction-table tbody').innerHTML ='<tr><td colspan="4">Failed to load data</td></tr>';}
+            
+            });
+          
+          fetch('/get-previous-balance').then(res => res.json()).then(data => 
+            {
+              document.getElementById('previous-balance').textContent ='₹' + parseFloat(data.previous_balance).toFixed(2);
+            });
+      }
+    }
 
 </script>
 

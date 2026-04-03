@@ -4,7 +4,7 @@ from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import*
 from utils.whatsapp_sender import*
 import time, mysql.connector
-import os, datetime, tempfile
+import os, datetime, requests
 from dotenv import load_dotenv
 from mysql.connector import pooling
 
@@ -14,11 +14,11 @@ app.secret_key = os.getenv('SECRET_KEY')
 load_dotenv()
 
 # 🔹 Create temp CA file from ENV
-ca_content = os.getenv("CA_CERT")
+# ca_content = os.getenv("CA_CERT")
 
-with tempfile.NamedTemporaryFile(delete=False) as f:
-    f.write(ca_content.encode())
-    ca_path = f.name
+# with tempfile.NamedTemporaryFile(delete=False) as f:
+#     f.write(ca_content.encode())
+#     ca_path = f.name
 
 # 🔹 Database configuration with SSL
 db_config = {
@@ -27,7 +27,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
     'port': int(os.getenv('DB_PORT')),
-    'ssl_ca': ca_path,
+    'ssl_ca': 'ca.pem',
     'ssl_verify_cert': True
 }
 
@@ -269,6 +269,7 @@ def submit_cash():
         conn.commit()
         cursor.close()
         conn.close()
+        requests.get("https://masjide-abubakr.onrender.com/generate-cache")
         return jsonify({'success': True, 'message': 'Transaction saved successfully'}), 200
 
     except Exception as e:
@@ -375,6 +376,8 @@ def pay_salary():
     finally:
         cursor.close()
         conn.close()
+        requests.get("https://masjide-abubakr.onrender.com/generate-cache")
+
 
 @app.route('/get-transactions')
 def get_transactions():
@@ -508,7 +511,7 @@ def get_table_data(table):
         if conn and conn.is_connected():
             conn.close()
 
-@app.route('/api/send-reminders', methods=['POST'])
+@app.route('/send-reminders', methods=['POST'])
 def send_reminders():
     try:
         conn = get_db_connection()
@@ -536,13 +539,27 @@ def send_reminders():
             return jsonify({'error': 'Invalid month format in DB'}), 500
 
         # 2️⃣ Compute next month name
-        import calendar
         if month == 12:
             month = 1
         else:
             month += 1
 
-        month_name_readable = calendar.month_name[month]
+        hindi_months = {
+            1: "जनवरी",
+            2: "फरवरी",
+            3: "मार्च",
+            4: "अप्रैल",
+            5: "मई",
+            6: "जून",
+            7: "जुलाई",
+            8: "अगस्त",
+            9: "सितंबर",
+            10: "अक्टूबर",
+            11: "नवंबर",
+            12: "दिसंबर"
+        }
+
+        month_name_readable = hindi_months[month]
 
         # 3️⃣ Fetch unpaid donors
         cursor.execute("""
@@ -566,7 +583,12 @@ def send_reminders():
             })
 
         # 4️⃣ Call internal reminder sender
-        sent, failed = send_whatsapp_reminders(donors, month_name_readable)
+        result = send_whatsapp_reminders(donors, month_name_readable)
+
+        if not result:
+            raise Exception("send_whatsapp_reminders returned None")
+
+        sent, failed, results = result
 
         # 5️⃣ Final response (exactly what JS expects)
         return jsonify({
@@ -578,7 +600,7 @@ def send_reminders():
 
     except Exception as e:
         print(f"Error in send-reminders API: {e}")
-        return jsonify({'error': 'Failed to send reminders'}), 500
+        return jsonify({'error': str(e)}), 500
     
 @app.route('/delete-transactions-page')
 def delete_transactions_page():
@@ -624,7 +646,7 @@ def delete_transactions():
         conn.commit()
         cursor.close()
         conn.close()
-
+        requests.get("https://masjide-abubakr.onrender.com/generate-cache")
         return jsonify({'success': True})
 
     except Exception as e:
@@ -699,7 +721,7 @@ def bulk_submit_cash():
         conn.commit()
         cursor.close()
         conn.close()
-
+        requests.get("https://masjide-abubakr.onrender.com/generate-cache")
         return jsonify({'success': True})
 
     except Exception as e:
@@ -710,6 +732,54 @@ def bulk_submit_cash():
 def bulk_create_page():
     return render_template('bulk_create.html')
 
+
+#CACHE SECTION
+
+@app.route('/generate-cache')
+def generate_cache():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # donors
+    cursor.execute("SELECT name, amount, paid_or_not FROM donor_list ORDER BY name ASC")
+    donors = cursor.fetchall()
+
+    # transactions
+    cursor.execute("SELECT Name, Amount, Type, Description FROM transactions ORDER BY Timestamp DESC")
+    transactions = cursor.fetchall()
+
+    # totals
+    cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Credit'")
+    total_credit = float(cursor.fetchone()["total"] or 0.0)
+
+    cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Debit'")
+    total_debit = float(cursor.fetchone()["total"] or 0.0)
+
+    cursor.execute("SELECT total_remaining_amount FROM monthly_report ORDER BY month_name DESC LIMIT 1")
+    prev = cursor.fetchone()
+    previous_balance = float(prev["total_remaining_amount"]) if prev else 0.0
+
+    data = {
+        "donors": donors,
+        "transactions": transactions,
+        "total": total_credit - total_debit,
+        "previous_balance": previous_balance
+    }
+
+    cursor.execute("SHOW TABLES LIKE 'transactions%'")
+    tables = [row[0] for row in cursor.fetchall()]
+
+    data["tables"] = tables
+
+    import json
+    os.makedirs("static/cache", exist_ok=True)
+    with open("static/cache/dashboard.json", "w") as f:
+        json.dump(data, f)
+
+    cursor.close()
+    conn.close()
+
+    return {"success": True}
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=10000)
