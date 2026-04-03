@@ -13,12 +13,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 load_dotenv()
 
-# 🔹 Create temp CA file from ENV
-ca_content = os.getenv("CA_CERT")
+# # 🔹 Create temp CA file from ENV
+# ca_content = os.getenv("CA_CERT")
 
-with tempfile.NamedTemporaryFile(delete=False) as f:
-    f.write(ca_content.encode())
-    ca_path = f.name
+# with tempfile.NamedTemporaryFile(delete=False) as f:
+#     f.write(ca_content.encode())
+#     ca_path = f.name
 
 # 🔹 Database configuration with SSL
 db_config = {
@@ -27,7 +27,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
     'port': int(os.getenv('DB_PORT')),
-    'ssl_ca': ca_path,
+    'ssl_ca': 'ca.pem',  # Use the temp CA file
     'ssl_verify_cert': True
 }
 
@@ -733,53 +733,53 @@ def bulk_create_page():
     return render_template('bulk_create.html')
 
 
-#CACHE SECTION
+# #CACHE SECTION
 
-@app.route('/generate-cache')
-def generate_cache():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+# @app.route('/generate-cache')
+# def generate_cache():
+#     conn = get_db_connection()
+#     cursor = conn.cursor(dictionary=True)
 
-    # donors
-    cursor.execute("SELECT name, amount, paid_or_not FROM donor_list ORDER BY name ASC")
-    donors = cursor.fetchall()
+#     # donors
+#     cursor.execute("SELECT name, amount, paid_or_not FROM donor_list ORDER BY name ASC")
+#     donors = cursor.fetchall()
 
-    # transactions
-    cursor.execute("SELECT Name, Amount, Type, Description FROM transactions ORDER BY Timestamp DESC")
-    transactions = cursor.fetchall()
+#     # transactions
+#     cursor.execute("SELECT Name, Amount, Type, Description FROM transactions ORDER BY Timestamp DESC")
+#     transactions = cursor.fetchall()
 
-    # totals
-    cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Credit'")
-    total_credit = float(cursor.fetchone()["total"] or 0.0)
+#     # totals
+#     cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Credit'")
+#     total_credit = float(cursor.fetchone()["total"] or 0.0)
 
-    cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Debit'")
-    total_debit = float(cursor.fetchone()["total"] or 0.0)
+#     cursor.execute("SELECT SUM(Amount) as total FROM transactions WHERE Type='Debit'")
+#     total_debit = float(cursor.fetchone()["total"] or 0.0)
 
-    cursor.execute("SELECT total_remaining_amount FROM monthly_report ORDER BY month_name DESC LIMIT 1")
-    prev = cursor.fetchone()
-    previous_balance = float(prev["total_remaining_amount"]) if prev else 0.0
+#     cursor.execute("SELECT total_remaining_amount FROM monthly_report ORDER BY month_name DESC LIMIT 1")
+#     prev = cursor.fetchone()
+#     previous_balance = float(prev["total_remaining_amount"]) if prev else 0.0
 
-    data = {
-        "donors": donors,
-        "transactions": transactions,
-        "total": total_credit - total_debit,
-        "previous_balance": previous_balance
-    }
+#     data = {
+#         "donors": donors,
+#         "transactions": transactions,
+#         "total": total_credit - total_debit,
+#         "previous_balance": previous_balance
+#     }
 
-    cursor.execute("SHOW TABLES LIKE 'transactions%'")
-    tables = [row[0] for row in cursor.fetchall()]
+#     cursor.execute("SHOW TABLES LIKE 'transactions%'")
+#     tables = [row[0] for row in cursor.fetchall()]
 
-    data["tables"] = tables
+#     data["tables"] = tables
 
-    import json
-    os.makedirs("static/cache", exist_ok=True)
-    with open("static/cache/dashboard.json", "w") as f:
-        json.dump(data, f)
+#     import json
+#     os.makedirs("static/cache", exist_ok=True)
+#     with open("static/cache/dashboard.json", "w") as f:
+#         json.dump(data, f)
 
-    cursor.close()
-    conn.close()
+#     cursor.close()
+#     conn.close()
 
-    return {"success": True}
+#     return {"success": True}
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=10000)

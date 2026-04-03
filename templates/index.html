@@ -873,11 +873,6 @@ table tfoot td {
   // On page load
   window.addEventListener("DOMContentLoaded", function () 
   {
-    // 🔥 PRELOAD CACHE (IMPORTANT)
-    window.cachedData = null;
-
-    fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => {window.cachedData = data;}).catch(() => {});
-
     const preferredLang = localStorage.getItem("preferredLang") || "en";
     document.getElementById("language-selector").value = preferredLang;
     setLanguage(preferredLang);
@@ -885,25 +880,16 @@ table tfoot td {
     // ---- call on initial page load ----
     updateProgressBar();
 
-    const selector = document.getElementById("table-selector");
-    selector.innerHTML = "<option>Loading months...</option>";
-
-    // 🟢 Try cache first
-    fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => 
-      {
-        if (data.tables) {populateDropdown(data.tables);}
-        else {throw "No cache tables";}
-      }).catch(() => 
-      {
-        // 🔵 fallback to backend
-        fetch('/get_tables').then(res => res.json()).then(tables => populateDropdown(tables)).catch(err => console.error("Failed to fetch tables:", err));
-      });
+    // 🔥 LOAD DROPDOWN DATA
+    fetch('/get_tables').then(res => res.json()).then(tables => populateDropdown(tables)).catch(err => {
+    console.error("Failed to load tables:", err);
+    });
   });
 
 
 function populateDropdown(tableNames) {
   const selector = document.getElementById("table-selector");
-  selector.innerHTML = ""; // clear old options
+  selector.innerHTML = ""; 
 
   // Default option
   const defaultOpt = document.createElement("option");
@@ -1043,53 +1029,53 @@ function loadTableData()
       }
 
       // Load transactions data if tab is "transactions"
-      if (tab === 'transactions') 
-      {
-          document.getElementById("table-header").style.display = "block";
-          document.getElementById("table-header").innerText = "Current Month";
-
-          if (window.cachedData && window.cachedData.transactions) 
-            {
-              // 🟢 USE MEMORY CACHE (FASTEST)
-              renderTransactions(window.cachedData.transactions);
-              document.getElementById('previous-balance').textContent ='₹' + window.cachedData.previous_balance.toFixed(2);
-            } 
-          else 
-            {
-              // 🟡 fallback to static cache file
-              fetch('/static/cache/dashboard.json').then(res => res.json()).then(data => 
-                {
-                  renderTransactions(data.transactions);
-                  document.getElementById('previous-balance').textContent ='₹' + data.previous_balance.toFixed(2);
-                }).catch(() => { document.querySelector('#transaction-table tbody').innerHTML =  '<tr><td colspan="4">Loading...</td></tr>';});
-            }
+      if (tab === 'transactions') {
+      
+        document.getElementById("table-header").style.display = "block";
+        document.getElementById("table-header").innerText = "Current Month";
+      
+        // 🟢 STEP 1: Load from localStorage (INSTANT)
+        const local = localStorage.getItem("transactions");
+      
+        if (local) {
+          renderTransactions(JSON.parse(local));
+        
+          const prev = localStorage.getItem("previous_balance");
+          if (prev) {
+            document.getElementById('previous-balance').textContent =
+              '₹' + parseFloat(prev).toFixed(2);
+          }
+        } else {
+          // show loading if nothing cached
+          document.querySelector('#transaction-table tbody').innerHTML =
+            '<tr><td colspan="4">Loading...</td></tr>';
+        }
+      
+        // 🔵 STEP 2: Fetch fresh data (background)
+        fetch('/get-transactions')
+          .then(res => {
+            if (!res.ok) throw new Error("API failed");
+            return res.json();
+          })
+          .then(data => {
+            renderTransactions(data);
           
-          // 🔵 STEP 2: Background refresh (REAL API)
-          fetch('/get-transactions').then(res => {if (!res.ok) throw new Error("API failed");return res.json();}).then(data => 
-            {
-              // 🟢 Update UI
-              renderTransactions(data);
-            
-              // 🟡 Save to localStorage
-              localStorage.setItem("transactions", JSON.stringify(data));
-            
-              // 🔥 Update memory cache (VERY IMPORTANT)
-              if (window.cachedData) {window.cachedData.transactions = data;} 
-              else {window.cachedData = { transactions: data };}
-            })
-            .catch(() => {
-            
-              // 🟡 Fallback to localStorage
-              const local = localStorage.getItem("transactions");
-              if (local) {renderTransactions(JSON.parse(local));} 
-              else {document.querySelector('#transaction-table tbody').innerHTML ='<tr><td colspan="4">Failed to load data</td></tr>';}
-            
-            });
+            // save to localStorage
+            localStorage.setItem("transactions", JSON.stringify(data));
+          })
+          .catch(() => {
+            console.log("Using cached transactions");
+          });
+        
+        fetch('/get-previous-balance')
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('previous-balance').textContent =
+              '₹' + parseFloat(data.previous_balance).toFixed(2);
           
-          fetch('/get-previous-balance').then(res => res.json()).then(data => 
-            {
-              document.getElementById('previous-balance').textContent ='₹' + parseFloat(data.previous_balance).toFixed(2);
-            });
+            // save balance also
+            localStorage.setItem("previous_balance", data.previous_balance);
+          });
       }
     }
 
