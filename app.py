@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, render_template,session,url_for,redir
 from utils.email_otp_sender import send_email_otp, OTP_STORE
 from utils.sheet_operations import*
 from utils.whatsapp_sender import*
-import time, mysql.connector
+import time, mysql.connector, tempfile
 import os, datetime, requests
 from dotenv import load_dotenv
 from mysql.connector import pooling
@@ -14,11 +14,11 @@ app.secret_key = os.getenv('SECRET_KEY')
 load_dotenv()
 
 # 🔹 Create temp CA file from ENV
-# ca_content = os.getenv("CA_CERT")
+ca_content = os.getenv("CA_CERT")
 
-# with tempfile.NamedTemporaryFile(delete=False) as f:
-#     f.write(ca_content.encode())
-#     ca_path = f.name
+with tempfile.NamedTemporaryFile(delete=False) as f:
+    f.write(ca_content.encode())
+    ca_path = f.name
 
 # 🔹 Database configuration with SSL
 db_config = {
@@ -27,7 +27,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
     'port': int(os.getenv('DB_PORT')),
-    'ssl_ca': 'ca.pem',
+    'ssl_ca': ca_path,
     'ssl_verify_cert': True
 }
 
