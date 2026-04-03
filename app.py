@@ -13,12 +13,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 load_dotenv()
 
-# # 🔹 Create temp CA file from ENV
-# ca_content = os.getenv("CA_CERT")
+# 🔹 Create temp CA file from ENV
+ca_content = os.getenv("CA_CERT")
 
-# with tempfile.NamedTemporaryFile(delete=False) as f:
-#     f.write(ca_content.encode())
-#     ca_path = f.name
+with tempfile.NamedTemporaryFile(delete=False) as f:
+    f.write(ca_content.encode())
+    ca_path = f.name
 
 # 🔹 Database configuration with SSL
 db_config = {
@@ -27,7 +27,7 @@ db_config = {
     'password': os.getenv('DB_PASSWORD'),
     'database': os.getenv('DATABASE_NAME'),
     'port': int(os.getenv('DB_PORT')),
-    'ssl_ca': 'ca.pem',  # Use the temp CA file
+    'ssl_ca': ca_path,  # Use the temp CA file
     'ssl_verify_cert': True
 }
 
